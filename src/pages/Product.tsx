@@ -9,6 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Package, Truck, Shield, Timer } from "lucide-react";
 
 const Product = () => {
   const { id } = useParams();
@@ -23,7 +30,22 @@ const Product = () => {
       "Термостійкість: до 800°C",
       "Довговічність: 100,000 км",
     ],
+    details: [
+      "Підвищена зносостійкість",
+      "Низький рівень шуму",
+      "Стабільна ефективність гальмування",
+      "Мінімальне зношування дисків",
+    ],
+    compatibility: [
+      "DAF XF 105",
+      "Mercedes-Benz Actros",
+      "MAN TGX",
+      "Volvo FH",
+    ],
     image: "/placeholder.svg",
+    stock: 15,
+    warranty: "12 місяців",
+    delivery: "2-3 дні",
   };
 
   return (
@@ -52,13 +74,28 @@ const Product = () => {
             </p>
             <p className="text-gray-600">{product.description}</p>
             
-            <div>
-              <h3 className="font-semibold mb-2">Характеристики:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                {product.specifications.map((spec, index) => (
-                  <li key={index} className="text-gray-600">{spec}</li>
-                ))}
-              </ul>
+            {/* Статус наявності */}
+            <div className="flex items-center gap-2 text-green-600">
+              <Package className="h-5 w-5" />
+              <span>В наявності: {product.stock} шт.</span>
+            </div>
+
+            {/* Доставка та гарантія */}
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-gray-600" />
+                <div>
+                  <p className="text-sm font-medium">Доставка</p>
+                  <p className="text-sm text-gray-600">{product.delivery}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-gray-600" />
+                <div>
+                  <p className="text-sm font-medium">Гарантія</p>
+                  <p className="text-sm text-gray-600">{product.warranty}</p>
+                </div>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex gap-4">
@@ -71,6 +108,40 @@ const Product = () => {
           </CardFooter>
         </Card>
       </div>
+
+      {/* Додаткова інформація */}
+      <Card className="mt-8">
+        <CardContent className="p-6">
+          <Tabs defaultValue="specifications">
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="specifications">Характеристики</TabsTrigger>
+              <TabsTrigger value="details">Опис</TabsTrigger>
+              <TabsTrigger value="compatibility">Сумісність</TabsTrigger>
+            </TabsList>
+            <TabsContent value="specifications" className="mt-4">
+              <ul className="list-disc list-inside space-y-2">
+                {product.specifications.map((spec, index) => (
+                  <li key={index} className="text-gray-600">{spec}</li>
+                ))}
+              </ul>
+            </TabsContent>
+            <TabsContent value="details" className="mt-4">
+              <ul className="list-disc list-inside space-y-2">
+                {product.details.map((detail, index) => (
+                  <li key={index} className="text-gray-600">{detail}</li>
+                ))}
+              </ul>
+            </TabsContent>
+            <TabsContent value="compatibility" className="mt-4">
+              <ul className="list-disc list-inside space-y-2">
+                {product.compatibility.map((item, index) => (
+                  <li key={index} className="text-gray-600">{item}</li>
+                ))}
+              </ul>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
