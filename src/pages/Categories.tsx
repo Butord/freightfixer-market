@@ -108,7 +108,8 @@ const Categories = () => {
                 </CardContent>
               </Card>
             </Link>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
