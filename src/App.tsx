@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
+import Categories from "./pages/Categories";
 import Category from "./pages/Category";
 import Product from "./pages/Product";
 import Cart from "./pages/Cart";
@@ -23,6 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
+            <Route path="categories" element={<Categories />} />
             <Route path="category/:id" element={<Category />} />
             <Route path="product/:id" element={<Product />} />
             <Route path="cart" element={<Cart />} />
