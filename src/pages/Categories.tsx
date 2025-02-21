@@ -7,7 +7,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Truck, Cog, Battery, Tool } from "lucide-react";
+import { Truck, Cog, Battery, Wrench } from "lucide-react";
 
 const CATEGORIES = [
   {
@@ -22,7 +22,7 @@ const CATEGORIES = [
     id: 2,
     name: "Трансмісія",
     description: "Коробка передач, зчеплення, карданний вал",
-    icon: Tool,
+    icon: Wrench,
     subcategories: ["КПП", "Зчеплення", "Карданний вал"],
     count: 158,
   },
@@ -46,7 +46,7 @@ const CATEGORIES = [
     id: 5,
     name: "Гальмівна система",
     description: "Гальмівні колодки, диски, супорти, шланги",
-    icon: Tool,
+    icon: Wrench,
     subcategories: ["Передні гальма", "Задні гальма", "Гальмівні шланги"],
     count: 142,
   },
