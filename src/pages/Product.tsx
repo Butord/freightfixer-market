@@ -15,13 +15,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Package, Truck, Shield, Timer } from "lucide-react";
+import { Package, Truck, Shield } from "lucide-react";
+import { useCartStore } from "@/stores/cartStore";
 
 const Product = () => {
   const { id } = useParams();
+  const addToCart = useCartStore((state) => state.addItem);
 
   // Тимчасові дані для демонстрації
   const product = {
+    id: Number(id),
     name: "Гальмівні колодки",
     price: 2500,
     description: "Високоякісні гальмівні колодки для вантажних автомобілів",
@@ -46,6 +49,15 @@ const Product = () => {
     stock: 15,
     warranty: "12 місяців",
     delivery: "2-3 дні",
+  };
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
   };
 
   return (
@@ -99,7 +111,7 @@ const Product = () => {
             </div>
           </CardContent>
           <CardFooter className="flex gap-4">
-            <Button className="flex-1" size="lg">
+            <Button className="flex-1" size="lg" onClick={handleAddToCart}>
               Додати в кошик
             </Button>
             <Button variant="outline" size="lg">

@@ -10,8 +10,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useCartStore } from "@/stores/cartStore";
 
 const Navbar = () => {
+  const cartItemsCount = useCartStore((state) => state.items.length);
+
   return (
     <nav className="bg-white border-b">
       <div className="container mx-auto px-4">
@@ -69,9 +72,11 @@ const Navbar = () => {
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-6 w-6" />
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
               </Button>
             </Link>
           </div>
