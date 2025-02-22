@@ -33,12 +33,46 @@ const AdminProducts = () => {
     setIsOpen(true);
   };
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    
+    const productData = {
+      name: formData.get("name") as string,
+      price: Number(formData.get("price")),
+      description: formData.get("description") as string,
+      category_id: Number(formData.get("category_id")),
+      image: "",  // TODO: Add image upload
+    };
+
+    try {
+      if (selectedProduct) {
+        // Update existing product
+        // await ApiService.updateProduct(selectedProduct.id, productData);
+      } else {
+        // Create new product
+        // await ApiService.createProduct(productData);
+      }
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error saving product:", error);
+    }
+  };
+
   if (isLoading) {
     return <div>Завантаження...</div>;
   }
 
   return (
     <div className="space-y-4">
+      {/* Кнопка для створення нового товару */}
+      <div className="flex justify-end">
+        <Button onClick={handleCreate}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Додати товар
+        </Button>
+      </div>
+
       {/* Таблиця товарів */}
       <Card className="p-6">
         <div className="relative overflow-x-auto">
@@ -111,16 +145,88 @@ const AdminProducts = () => {
             </SheetTitle>
           </SheetHeader>
 
-          {/* TODO: Додати форму для товару */}
-          <div className="py-4">
-            Форма буде додана в наступному кроці
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Назва товару
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                defaultValue={selectedProduct?.name}
+                className="w-full rounded-md border border-gray-200 p-2"
+              />
+            </div>
 
-          <SheetFooter>
-            <Button type="submit">
-              {selectedProduct ? "Зберегти зміни" : "Додати товар"}
-            </Button>
-          </SheetFooter>
+            <div className="space-y-2">
+              <label htmlFor="price" className="text-sm font-medium">
+                Ціна
+              </label>
+              <input
+                id="price"
+                name="price"
+                type="number"
+                required
+                defaultValue={selectedProduct?.price}
+                className="w-full rounded-md border border-gray-200 p-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="description" className="text-sm font-medium">
+                Опис
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                defaultValue={selectedProduct?.description}
+                className="w-full rounded-md border border-gray-200 p-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-sm font-medium">
+                Категорія
+              </label>
+              <select
+                id="category_id"
+                name="category_id"
+                defaultValue={selectedProduct?.category_id}
+                className="w-full rounded-md border border-gray-200 p-2"
+              >
+                <option value="">Виберіть категорію</option>
+                {/* TODO: Add categories from API */}
+                <option value="1">Категорія 1</option>
+                <option value="2">Категорія 2</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Зображення
+              </label>
+              <div className="flex items-center justify-center w-full">
+                <label className="w-full h-32 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <ImagePlus className="w-8 h-8 mb-4 text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файл
+                    </p>
+                  </div>
+                  <input type="file" name="image" className="hidden" accept="image/*" />
+                </label>
+              </div>
+            </div>
+
+            <SheetFooter>
+              <Button type="submit">
+                {selectedProduct ? "Зберегти зміни" : "Додати товар"}
+              </Button>
+            </SheetFooter>
+          </form>
         </SheetContent>
       </Sheet>
     </div>
