@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pencil, Trash2, ImagePlus } from "lucide-react";
+import { Pencil, Trash2, ImagePlus, Plus } from "lucide-react";
 import ApiService from "@/services/api";
 import type { Product } from "@/types/api";
 
@@ -68,7 +68,7 @@ const AdminProducts = () => {
       {/* Кнопка для створення нового товару */}
       <div className="flex justify-end">
         <Button onClick={handleCreate}>
-          <PlusCircle className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 h-4 w-4" />
           Додати товар
         </Button>
       </div>
