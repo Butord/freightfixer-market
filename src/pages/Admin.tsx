@@ -9,9 +9,9 @@ import {
   Settings,
   PlusCircle,
 } from "lucide-react";
+import AdminProducts from "./AdminProducts";
 
 const AdminDashboard = () => <div>Dashboard Content</div>;
-const AdminProducts = () => <div>Products Management</div>;
 const AdminOrders = () => <div>Orders Management</div>;
 const AdminCustomers = () => <div>Customers Management</div>;
 const AdminSettings = () => <div>Settings Content</div>;
@@ -55,17 +55,6 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-8">
-        <div className="mb-8 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold">
-            {navigation.find((item) => item.path === location.pathname)?.name ||
-              "Панель керування"}
-          </h1>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Додати товар
-          </Button>
-        </div>
-
         <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
