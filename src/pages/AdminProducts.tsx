@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -68,6 +67,24 @@ const AdminProducts = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: ApiService.deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({
+        title: "Успішно!",
+        description: "Товар успішно видалено",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Помилка!",
+        description: "Не вдалося видалити товар",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
     setPreviewImage(product.image);
@@ -78,6 +95,12 @@ const AdminProducts = () => {
     setSelectedProduct(null);
     setPreviewImage(null);
     setIsOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Ви впевнені, що хочете видалити цей товар?')) {
+      await deleteMutation.mutateAsync(id);
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,6 +197,7 @@ const AdminProducts = () => {
                         variant="ghost"
                         size="icon"
                         className="text-destructive"
+                        onClick={() => handleDelete(product.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
