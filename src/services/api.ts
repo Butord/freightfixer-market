@@ -1,4 +1,3 @@
-
 import { Product, Category, Order } from '@/types/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -15,6 +14,31 @@ class ApiService {
     const response = await fetch(`${API_URL}/products/${id}`);
     if (!response.ok) throw new Error('Failed to fetch product');
     return response.json();
+  }
+
+  static async createProduct(productData: FormData): Promise<Product> {
+    const response = await fetch(`${API_URL}/products`, {
+      method: 'POST',
+      body: productData,
+    });
+    if (!response.ok) throw new Error('Failed to create product');
+    return response.json();
+  }
+
+  static async updateProduct(id: number, productData: FormData): Promise<Product> {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'PUT',
+      body: productData,
+    });
+    if (!response.ok) throw new Error('Failed to update product');
+    return response.json();
+  }
+
+  static async deleteProduct(id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
   }
 
   // Категорії

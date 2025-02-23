@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Sheet,
   SheetContent,
@@ -11,49 +11,99 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pencil, Trash2, ImagePlus, Plus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import ApiService from "@/services/api";
 import type { Product } from "@/types/api";
 
 const AdminProducts = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: ApiService.getProducts,
   });
 
+  const createMutation = useMutation({
+    mutationFn: ApiService.createProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({
+        title: "Успішно!",
+        description: "Товар успішно створено",
+      });
+      setIsOpen(false);
+      setPreviewImage(null);
+    },
+    onError: () => {
+      toast({
+        title: "Помилка!",
+        description: "Не вдалося створити товар",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: FormData }) =>
+      ApiService.updateProduct(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({
+        title: "Успішно!",
+        description: "Товар успішно оновлено",
+      });
+      setIsOpen(false);
+      setPreviewImage(null);
+    },
+    onError: () => {
+      toast({
+        title: "Помилка!",
+        description: "Не вдалося оновити товар",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
+    setPreviewImage(product.image);
     setIsOpen(true);
   };
 
   const handleCreate = () => {
     setSelectedProduct(null);
+    setPreviewImage(null);
     setIsOpen(true);
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
-    const productData = {
-      name: formData.get("name") as string,
-      price: Number(formData.get("price")),
-      description: formData.get("description") as string,
-      category_id: Number(formData.get("category_id")),
-      image: "",  // TODO: Add image upload
-    };
-
     try {
       if (selectedProduct) {
-        // Update existing product
-        // await ApiService.updateProduct(selectedProduct.id, productData);
+        await updateMutation.mutateAsync({
+          id: selectedProduct.id,
+          data: formData,
+        });
       } else {
-        // Create new product
-        // await ApiService.createProduct(productData);
+        await createMutation.mutateAsync(formData);
       }
-      setIsOpen(false);
     } catch (error) {
       console.error("Error saving product:", error);
     }
@@ -209,14 +259,30 @@ const AdminProducts = () => {
                 Зображення
               </label>
               <div className="flex items-center justify-center w-full">
-                <label className="w-full h-32 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <ImagePlus className="w-8 h-8 mb-4 text-gray-500" />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файл
-                    </p>
-                  </div>
-                  <input type="file" name="image" className="hidden" accept="image/*" />
+                <label className="relative w-full h-32 flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                  {previewImage ? (
+                    <div className="absolute inset-0 w-full h-full">
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-full h-full object-contain p-2"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <ImagePlus className="w-8 h-8 mb-4 text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файл
+                      </p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    name="image"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
                 </label>
               </div>
             </div>
