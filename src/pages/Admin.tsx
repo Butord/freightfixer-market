@@ -10,6 +10,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import AdminProducts from "./AdminProducts";
+import AdminCategories from "./AdminCategories";
 
 const AdminDashboard = () => <div>Dashboard Content</div>;
 const AdminOrders = () => <div>Orders Management</div>;
@@ -22,6 +23,7 @@ const Admin = () => {
   const navigation = [
     { name: "Панель керування", path: "/admin", icon: Package },
     { name: "Товари", path: "/admin/products", icon: Package },
+    { name: "Категорії", path: "/admin/categories", icon: Package },
     { name: "Замовлення", path: "/admin/orders", icon: ShoppingCart },
     { name: "Клієнти", path: "/admin/customers", icon: Users },
     { name: "Налаштування", path: "/admin/settings", icon: Settings },
@@ -58,6 +60,7 @@ const Admin = () => {
         <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
+          <Route path="categories" element={<AdminCategories />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="customers" element={<AdminCustomers />} />
           <Route path="settings" element={<AdminSettings />} />

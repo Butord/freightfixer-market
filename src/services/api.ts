@@ -1,3 +1,4 @@
+
 import { Product, Category, Order } from '@/types/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -52,6 +53,34 @@ class ApiService {
     const response = await fetch(`${API_URL}/categories/${id}`);
     if (!response.ok) throw new Error('Failed to fetch category');
     return response.json();
+  }
+
+  static async createCategory(categoryData: FormData): Promise<Category> {
+    const response = await fetch(`${API_URL}/categories`, {
+      method: 'POST',
+      body: categoryData,
+    });
+    if (!response.ok) throw new Error('Failed to create category');
+    return response.json();
+  }
+
+  static async updateCategory(id: number, categoryData: FormData): Promise<Category> {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'PUT',
+      body: categoryData,
+    });
+    if (!response.ok) throw new Error('Failed to update category');
+    return response.json();
+  }
+
+  static async deleteCategory(id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete category');
+    }
   }
 
   // Замовлення
