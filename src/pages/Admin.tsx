@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,10 +8,18 @@ import {
   Settings,
   LayoutDashboard,
   FolderTree,
+  Phone,
+  Mail,
+  CreditCard,
+  Bell,
+  Store,
+  Search,
 } from "lucide-react";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const AdminDashboard = () => {
   const stats = [
@@ -75,7 +82,6 @@ const AdminDashboard = () => {
               <Button variant="ghost">Переглянути всі</Button>
             </div>
             <div className="p-6 pt-0">
-              {/* Тут буде графік або таблиця з замовленнями */}
               <div className="text-muted-foreground">
                 Завантаження даних...
               </div>
@@ -89,7 +95,6 @@ const AdminDashboard = () => {
               <Button variant="ghost">Детальніше</Button>
             </div>
             <div className="p-6 pt-0">
-              {/* Тут буде список популярних товарів */}
               <div className="text-muted-foreground">
                 Завантаження даних...
               </div>
@@ -101,44 +106,253 @@ const AdminDashboard = () => {
   );
 };
 
-const AdminOrders = () => (
-  <div className="space-y-6">
-    <h2 className="text-3xl font-bold tracking-tight">Замовлення</h2>
-    <div className="rounded-lg border bg-card">
-      <div className="p-6">
-        <div className="text-muted-foreground">
-          Тут буде список замовлень...
-        </div>
-      </div>
-    </div>
-  </div>
-);
+const AdminOrders = () => {
+  const orders = [
+    {
+      id: "ORD001",
+      customer: "Іван Петренко",
+      date: "2024-02-24",
+      total: "2,450₴",
+      status: "pending",
+    },
+    {
+      id: "ORD002",
+      customer: "Марія Коваленко",
+      date: "2024-02-23",
+      total: "1,280₴",
+      status: "completed",
+    },
+  ];
 
-const AdminCustomers = () => (
-  <div className="space-y-6">
-    <h2 className="text-3xl font-bold tracking-tight">Клієнти</h2>
-    <div className="rounded-lg border bg-card">
-      <div className="p-6">
-        <div className="text-muted-foreground">
-          Тут буде список клієнтів...
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Замовлення</h2>
+        <div className="flex gap-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Пошук замовлень..." className="pl-8" />
+          </div>
+          <Button>Фільтрувати</Button>
         </div>
       </div>
-    </div>
-  </div>
-);
 
-const AdminSettings = () => (
-  <div className="space-y-6">
-    <h2 className="text-3xl font-bold tracking-tight">Налаштування</h2>
-    <div className="rounded-lg border bg-card">
-      <div className="p-6">
-        <div className="text-muted-foreground">
-          Тут будуть налаштування магазину...
+      <Card>
+        <div className="relative overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs uppercase bg-muted">
+              <tr>
+                <th className="px-6 py-3">ID</th>
+                <th className="px-6 py-3">Клієнт</th>
+                <th className="px-6 py-3">Дата</th>
+                <th className="px-6 py-3">Сума</th>
+                <th className="px-6 py-3">Статус</th>
+                <th className="px-6 py-3">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id} className="border-b">
+                  <td className="px-6 py-4 font-medium">{order.id}</td>
+                  <td className="px-6 py-4">{order.customer}</td>
+                  <td className="px-6 py-4">{order.date}</td>
+                  <td className="px-6 py-4">{order.total}</td>
+                  <td className="px-6 py-4">
+                    <span className={cn(
+                      "px-2 py-1 rounded-full text-xs font-medium",
+                      order.status === "completed" ? "bg-green-100 text-green-800" : 
+                      "bg-yellow-100 text-yellow-800"
+                    )}>
+                      {order.status === "completed" ? "Виконано" : "Очікує"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Button variant="ghost" size="sm">Деталі</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+const AdminCustomers = () => {
+  const customers = [
+    {
+      name: "Іван Петренко",
+      email: "ivan@example.com",
+      phone: "+380501234567",
+      orders: 5,
+      spent: "12,450₴",
+    },
+    {
+      name: "Марія Коваленко",
+      email: "maria@example.com",
+      phone: "+380671234567",
+      orders: 3,
+      spent: "8,280₴",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Клієнти</h2>
+        <div className="flex gap-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Пошук клієнтів..." className="pl-8" />
+          </div>
+          <Button>Експорт</Button>
         </div>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-6">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm font-medium text-muted-foreground">
+              Всього клієнтів
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold">573</div>
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm font-medium text-muted-foreground">
+              Всього замовлень
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold">1,234</div>
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm font-medium text-muted-foreground">
+              Середній чек
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold">2,450₴</div>
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="text-sm font-medium text-muted-foreground">
+              Нові за місяць
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold">+48</div>
+        </Card>
+      </div>
+
+      <Card>
+        <div className="relative overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs uppercase bg-muted">
+              <tr>
+                <th className="px-6 py-3">Клієнт</th>
+                <th className="px-6 py-3">Контакти</th>
+                <th className="px-6 py-3">Замовлення</th>
+                <th className="px-6 py-3">Витрачено</th>
+                <th className="px-6 py-3">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((customer) => (
+                <tr key={customer.email} className="border-b">
+                  <td className="px-6 py-4 font-medium">{customer.name}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        {customer.email}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        {customer.phone}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">{customer.orders}</td>
+                  <td className="px-6 py-4">{customer.spent}</td>
+                  <td className="px-6 py-4">
+                    <Button variant="ghost" size="sm">Деталі</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
-  </div>
-);
+  );
+};
+
+const AdminSettings = () => {
+  const settingsSections = [
+    {
+      title: "Магазин",
+      icon: Store,
+      description: "Налаштування магазину, валюта, локалізація",
+      settings: [
+        { name: "Назва магазину", value: "Мій магазин" },
+        { name: "Валюта", value: "UAH" },
+        { name: "Мова", value: "Українська" },
+      ]
+    },
+    {
+      title: "Сповіщення",
+      icon: Bell,
+      description: "Налаштування email та SMS сповіщень",
+      settings: [
+        { name: "Email сповіщення", value: "Увімкнено" },
+        { name: "SMS сповіщення", value: "Вимкнено" },
+        { name: "Push сповіщення", value: "Увімкнено" },
+      ]
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-3xl font-bold tracking-tight">Налаштування</h2>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        {settingsSections.map((section) => (
+          <Card key={section.title} className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <section.icon className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-medium">{section.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {section.description}
+                </p>
+                <div className="mt-4 space-y-3">
+                  {section.settings.map((setting) => (
+                    <div key={setting.name} className="flex items-center justify-between">
+                      <span className="text-sm">{setting.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {setting.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Button className="mt-4" variant="outline">
+                  Змінити налаштування
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Admin = () => {
   const location = useLocation();
@@ -154,7 +368,6 @@ const Admin = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md">
         <div className="p-6">
           <h2 className="text-xl font-bold text-primary">Admin Panel</h2>
@@ -184,7 +397,6 @@ const Admin = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto py-8">
           <Routes>
