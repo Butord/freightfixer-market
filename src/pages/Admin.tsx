@@ -8,7 +8,7 @@ import {
   Users,
   Settings,
   LayoutDashboard,
-  Categories,
+  FolderTree,
 } from "lucide-react";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
@@ -146,7 +146,7 @@ const Admin = () => {
   const navigation = [
     { name: "Панель керування", path: "/admin", icon: LayoutDashboard },
     { name: "Товари", path: "/admin/products", icon: Package },
-    { name: "Категорії", path: "/admin/categories", icon: Categories },
+    { name: "Категорії", path: "/admin/categories", icon: FolderTree },
     { name: "Замовлення", path: "/admin/orders", icon: ShoppingCart },
     { name: "Клієнти", path: "/admin/customers", icon: Users },
     { name: "Налаштування", path: "/admin/settings", icon: Settings },
