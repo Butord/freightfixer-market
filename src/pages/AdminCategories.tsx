@@ -9,7 +9,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ImagePlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ImageUpload } from "@/components/ui/image-upload";
