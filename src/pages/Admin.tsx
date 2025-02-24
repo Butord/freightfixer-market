@@ -15,11 +15,19 @@ import {
   Store,
   Search,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const AdminDashboard = () => {
   const stats = [
@@ -107,6 +115,29 @@ const AdminDashboard = () => {
 };
 
 const AdminOrders = () => {
+  const [selectedOrder, setSelectedOrder] = useState<{
+    id: string;
+    customer: string;
+    date: string;
+    total: string;
+    status: string;
+    items?: Array<{
+      id: number;
+      name: string;
+      quantity: number;
+      price: string;
+    }>;
+    shipping?: {
+      method: string;
+      address: string;
+      tracking?: string;
+    };
+    payment?: {
+      method: string;
+      status: string;
+    };
+  } | null>(null);
+
   const orders = [
     {
       id: "ORD001",
@@ -114,6 +145,19 @@ const AdminOrders = () => {
       date: "2024-02-24",
       total: "2,450₴",
       status: "pending",
+      items: [
+        { id: 1, name: "Смартфон Samsung Galaxy A54", quantity: 1, price: "1,999₴" },
+        { id: 2, name: "Захисне скло", quantity: 2, price: "225.50₴" },
+      ],
+      shipping: {
+        method: "Нова Пошта",
+        address: "м. Київ, відділення №23",
+        tracking: "20450111111111",
+      },
+      payment: {
+        method: "Карта Visa/Mastercard",
+        status: "Оплачено",
+      },
     },
     {
       id: "ORD002",
@@ -121,6 +165,17 @@ const AdminOrders = () => {
       date: "2024-02-23",
       total: "1,280₴",
       status: "completed",
+      items: [
+        { id: 3, name: "Навушники Apple AirPods", quantity: 1, price: "1,280₴" },
+      ],
+      shipping: {
+        method: "Укрпошта",
+        address: "м. Львів, вул. Франка 25",
+      },
+      payment: {
+        method: "При отриманні",
+        status: "Очікує оплати",
+      },
     },
   ];
 
@@ -167,7 +222,13 @@ const AdminOrders = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <Button variant="ghost" size="sm">Деталі</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      Деталі
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -175,6 +236,84 @@ const AdminOrders = () => {
           </table>
         </div>
       </Card>
+
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Деталі замовлення {selectedOrder?.id}</DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[80vh]">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Інформація про клієнта</h3>
+                <p className="text-sm">{selectedOrder?.customer}</p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Товари</h3>
+                <div className="space-y-2">
+                  {selectedOrder?.items?.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center py-2">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Кількість: {item.quantity}
+                        </p>
+                      </div>
+                      <p className="font-medium">{item.price}</p>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center pt-4 font-bold">
+                    <p>Всього</p>
+                    <p>{selectedOrder?.total}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Доставка</h3>
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    <span className="font-medium">Спосіб доставки:</span>{" "}
+                    {selectedOrder?.shipping?.method}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Адреса:</span>{" "}
+                    {selectedOrder?.shipping?.address}
+                  </p>
+                  {selectedOrder?.shipping?.tracking && (
+                    <p className="text-sm">
+                      <span className="font-medium">ТТН:</span>{" "}
+                      {selectedOrder.shipping.tracking}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Оплата</h3>
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    <span className="font-medium">Спосіб оплати:</span>{" "}
+                    {selectedOrder?.payment?.method}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Статус:</span>{" "}
+                    {selectedOrder?.payment?.status}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
