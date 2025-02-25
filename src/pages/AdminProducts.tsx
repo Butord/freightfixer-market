@@ -9,11 +9,17 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Plus, Globe } from "lucide-react";
+import { ImagePlus, Plus, Globe, HelpCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import ApiService from "@/services/api";
 import type { Product } from "@/types/api";
 
@@ -293,9 +299,26 @@ const AdminProducts = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <label htmlFor="meta_title" className="text-sm font-medium">
-                    META Title
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="meta_title" className="text-sm font-medium">
+                      META Title
+                    </label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <HelpCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p className="w-[250px] text-xs">
+                            Якщо не заповнено, буде використано шаблон:<br />
+                            "Купити {{productName}} за найкращою ціною в Україні | Мій магазин"
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <input
                     id="meta_title"
                     name="meta_title"
@@ -307,9 +330,26 @@ const AdminProducts = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="meta_description" className="text-sm font-medium">
-                    META Description
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="meta_description" className="text-sm font-medium">
+                      META Description
+                    </label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <HelpCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p className="w-[250px] text-xs">
+                            Якщо не заповнено, буде використано шаблон:<br />
+                            "✅ {{productName}} в наявності! Гарантія якості ➜ Найкраща ціна ➜ Швидка доставка по всій Україні ✓ Відгуки покупців"
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <textarea
                     id="meta_description"
                     name="meta_description"
@@ -321,9 +361,26 @@ const AdminProducts = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="meta_keywords" className="text-sm font-medium">
-                    META Keywords
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="meta_keywords" className="text-sm font-medium">
+                      META Keywords
+                    </label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <HelpCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p className="w-[250px] text-xs">
+                            Якщо не заповнено, буде використано шаблон:<br />
+                            "{{productName}}, купити {{productName}}, ціна, доставка"
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <textarea
                     id="meta_keywords"
                     name="meta_keywords"

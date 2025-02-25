@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard = () => {
   const stats = [
@@ -696,6 +697,44 @@ const AdminSettings = () => {
           type: "text"
         }
       ]
+    },
+    {
+      id: "seo_patterns",
+      title: "SEO патерни",
+      icon: Search,
+      description: "Шаблони для автоматичної генерації SEO-даних",
+      settings: [
+        { 
+          name: "Шаблон Title для товарів", 
+          value: "Купити {{productName}} за найкращою ціною в Україні | Мій магазин", 
+          type: "text" 
+        },
+        { 
+          name: "Шаблон Description для товарів", 
+          value: "✅ {{productName}} в наявності! Гарантія якості ➜ Найкраща ціна ➜ Швидка доставка по всій Україні ✓ Відгуки покупців", 
+          type: "textarea" 
+        },
+        { 
+          name: "Шаблон Keywords для товарів", 
+          value: "{{productName}}, купити {{productName}}, ціна, доставка", 
+          type: "textarea" 
+        },
+        { 
+          name: "Шаблон Title для категорій", 
+          value: "{{categoryName}} - купити в інтернет-магазині | Мій магазин", 
+          type: "text" 
+        },
+        { 
+          name: "Шаблон Description для категорій", 
+          value: "Великий вибір товарів в категорії {{categoryName}}. ✓ Офіційна гарантія ➜ Кращі ціни ➜ Доставка по всій Україні", 
+          type: "textarea" 
+        },
+        { 
+          name: "Шаблон Keywords для категорій", 
+          value: "{{categoryName}}, купити {{categoryName}}, ціна, каталог", 
+          type: "textarea" 
+        }
+      ]
     }
   ];
 
@@ -734,65 +773,122 @@ const AdminSettings = () => {
                       <DialogHeader>
                         <DialogTitle>Редагування {section.title.toLowerCase()}</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        {section.settings.map((setting) => (
-                          <div key={setting.name} className="flex flex-col gap-2">
-                            <label className="text-sm font-medium">
-                              {setting.name}
-                            </label>
-                            {setting.type === "text" && (
-                              <Input
-                                defaultValue={setting.value as string}
-                                type="text"
-                              />
-                            )}
-                            {setting.type === "email" && (
-                              <Input
-                                defaultValue={setting.value as string}
-                                type="email"
-                              />
-                            )}
-                            {setting.type === "password" && (
-                              <Input
-                                defaultValue={setting.value as string}
-                                type="password"
-                              />
-                            )}
-                            {setting.type === "textarea" && (
-                              <textarea
-                                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                defaultValue={setting.value as string}
-                              />
-                            )}
-                            {setting.type === "select" && (
-                              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                                {setting.options?.map((option) => (
-                                  <option 
-                                    key={option} 
-                                    selected={option === setting.value}
-                                  >
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                            {setting.type === "switch" && (
-                              <div className="flex items-center space-x-2">
-                                <Switch 
-                                  defaultChecked={setting.value as boolean} 
-                                  id={`${section.id}-${setting.name}`}
-                                />
-                                <label 
-                                  htmlFor={`${section.id}-${setting.name}`}
-                                  className="text-sm text-muted-foreground"
-                                >
-                                  {setting.value ? "Увімкнено" : "Вимкнено"}
+                      {section.id === "seo_patterns" ? (
+                        <Tabs defaultValue="products">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="products">Товари</TabsTrigger>
+                            <TabsTrigger value="categories">Категорії</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="products" className="space-y-4 py-4">
+                            {section.settings.slice(0, 3).map((setting) => (
+                              <div key={setting.name} className="flex flex-col gap-2">
+                                <label className="text-sm font-medium">
+                                  {setting.name}
                                 </label>
+                                {setting.type === "text" && (
+                                  <Input
+                                    defaultValue={setting.value as string}
+                                    type="text"
+                                  />
+                                )}
+                                {setting.type === "textarea" && (
+                                  <textarea
+                                    className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    defaultValue={setting.value as string}
+                                  />
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  Використовуйте {{productName}}, {{price}}, {{description}} як змінні
+                                </p>
                               </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                            ))}
+                          </TabsContent>
+                          <TabsContent value="categories" className="space-y-4 py-4">
+                            {section.settings.slice(3, 6).map((setting) => (
+                              <div key={setting.name} className="flex flex-col gap-2">
+                                <label className="text-sm font-medium">
+                                  {setting.name}
+                                </label>
+                                {setting.type === "text" && (
+                                  <Input
+                                    defaultValue={setting.value as string}
+                                    type="text"
+                                  />
+                                )}
+                                {setting.type === "textarea" && (
+                                  <textarea
+                                    className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    defaultValue={setting.value as string}
+                                  />
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  Використовуйте {{categoryName}} як змінну
+                                </p>
+                              </div>
+                            ))}
+                          </TabsContent>
+                        </Tabs>
+                      ) : (
+                        <div className="space-y-4 py-4">
+                          {section.settings.map((setting) => (
+                            <div key={setting.name} className="flex flex-col gap-2">
+                              <label className="text-sm font-medium">
+                                {setting.name}
+                              </label>
+                              {setting.type === "text" && (
+                                <Input
+                                  defaultValue={setting.value as string}
+                                  type="text"
+                                />
+                              )}
+                              {setting.type === "email" && (
+                                <Input
+                                  defaultValue={setting.value as string}
+                                  type="email"
+                                />
+                              )}
+                              {setting.type === "password" && (
+                                <Input
+                                  defaultValue={setting.value as string}
+                                  type="password"
+                                />
+                              )}
+                              {setting.type === "textarea" && (
+                                <textarea
+                                  className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                  defaultValue={setting.value as string}
+                                />
+                              )}
+                              {setting.type === "select" && (
+                                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                  {setting.options?.map((option) => (
+                                    <option 
+                                      key={option} 
+                                      selected={option === setting.value}
+                                    >
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                              {setting.type === "switch" && (
+                                <div className="flex items-center space-x-2">
+                                  <Switch 
+                                    defaultChecked={setting.value as boolean} 
+                                    id={`${section.id}-${setting.name}`}
+                                  />
+                                  <label 
+                                    htmlFor={`${section.id}-${setting.name}`}
+                                    className="text-sm text-muted-foreground"
+                                  >
+                                    {setting.value ? "Увімкнено" : "Вимкнено"}
+                                  </label>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <DialogFooter>
                         <Button 
                           variant="outline" 
