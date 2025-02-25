@@ -4,6 +4,9 @@ CREATE TABLE categories (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   image VARCHAR(255),
+  meta_title VARCHAR(255),
+  meta_description TEXT,
+  meta_keywords TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -15,6 +18,9 @@ CREATE TABLE products (
   description TEXT,
   image VARCHAR(255),
   category_id INT,
+  meta_title VARCHAR(255),
+  meta_description TEXT,
+  meta_keywords TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES categories(id)
 );

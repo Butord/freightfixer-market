@@ -6,12 +6,18 @@ export interface Product {
   description: string;
   image: string;
   category_id: number;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
 }
 
 export interface Category {
   id: number;
   name: string;
   image: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
 }
 
 export interface Order {

@@ -49,6 +49,9 @@ try {
             $price = $_POST['price'];
             $description = $_POST['description'] ?? '';
             $category_id = $_POST['category_id'];
+            $meta_title = $_POST['meta_title'] ?? '';
+            $meta_description = $_POST['meta_description'] ?? '';
+            $meta_keywords = $_POST['meta_keywords'] ?? '';
             $image_path = '';
 
             // Обробка завантаженого файлу
@@ -63,8 +66,8 @@ try {
                 }
             }
 
-            $stmt = $pdo->prepare('INSERT INTO products (name, price, description, category_id, image) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$name, $price, $description, $category_id, $image_path]);
+            $stmt = $pdo->prepare('INSERT INTO products (name, price, description, category_id, image, meta_title, meta_description, meta_keywords) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $price, $description, $category_id, $image_path, $meta_title, $meta_description, $meta_keywords]);
             $product_id = $pdo->lastInsertId();
 
             $stmt = $pdo->prepare('SELECT * FROM products WHERE id = ?');
@@ -98,6 +101,18 @@ try {
                 if (isset($_PUT['category_id'])) {
                     $sets[] = 'category_id = ?';
                     $params[] = $_PUT['category_id'];
+                }
+                if (isset($_PUT['meta_title'])) {
+                    $sets[] = 'meta_title = ?';
+                    $params[] = $_PUT['meta_title'];
+                }
+                if (isset($_PUT['meta_description'])) {
+                    $sets[] = 'meta_description = ?';
+                    $params[] = $_PUT['meta_description'];
+                }
+                if (isset($_PUT['meta_keywords'])) {
+                    $sets[] = 'meta_keywords = ?';
+                    $params[] = $_PUT['meta_keywords'];
                 }
 
                 // Обробка завантаженого файлу

@@ -37,6 +37,9 @@ try {
 
         case 'POST':
             $name = $_POST['name'];
+            $meta_title = $_POST['meta_title'] ?? '';
+            $meta_description = $_POST['meta_description'] ?? '';
+            $meta_keywords = $_POST['meta_keywords'] ?? '';
             $image_path = '';
 
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -50,8 +53,8 @@ try {
                 }
             }
 
-            $stmt = $pdo->prepare('INSERT INTO categories (name, image) VALUES (?, ?)');
-            $stmt->execute([$name, $image_path]);
+            $stmt = $pdo->prepare('INSERT INTO categories (name, image, meta_title, meta_description, meta_keywords) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$name, $image_path, $meta_title, $meta_description, $meta_keywords]);
             $category_id = $pdo->lastInsertId();
 
             $stmt = $pdo->prepare('SELECT * FROM categories WHERE id = ?');
@@ -72,6 +75,21 @@ try {
                 if (isset($_PUT['name'])) {
                     $sets[] = 'name = ?';
                     $params[] = $_PUT['name'];
+                }
+
+                if (isset($_PUT['meta_title'])) {
+                    $sets[] = 'meta_title = ?';
+                    $params[] = $_PUT['meta_title'];
+                }
+
+                if (isset($_PUT['meta_description'])) {
+                    $sets[] = 'meta_description = ?';
+                    $params[] = $_PUT['meta_description'];
+                }
+
+                if (isset($_PUT['meta_keywords'])) {
+                    $sets[] = 'meta_keywords = ?';
+                    $params[] = $_PUT['meta_keywords'];
                 }
 
                 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
