@@ -21,13 +21,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 
 const AdminDashboard = () => {
   const stats = [
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
             </div>
             <div className="p-6 pt-0">
               <div className="text-muted-foreground">
-                Завантаження даних...
+                Завант��ження даних...
               </div>
             </div>
           </div>
@@ -319,6 +319,23 @@ const AdminOrders = () => {
 };
 
 const AdminCustomers = () => {
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    orders: number;
+    spent: string;
+    address?: string;
+    registrationDate?: string;
+    lastOrder?: string;
+    orderHistory?: Array<{
+      id: string;
+      date: string;
+      total: string;
+      status: string;
+    }>;
+  } | null>(null);
+
   const customers = [
     {
       name: "Іван Петренко",
@@ -326,6 +343,29 @@ const AdminCustomers = () => {
       phone: "+380501234567",
       orders: 5,
       spent: "12,450₴",
+      address: "м. Київ, вул. Шевченка 10, кв. 15",
+      registrationDate: "2023-12-15",
+      lastOrder: "2024-02-24",
+      orderHistory: [
+        {
+          id: "ORD001",
+          date: "2024-02-24",
+          total: "2,450₴",
+          status: "completed",
+        },
+        {
+          id: "ORD002",
+          date: "2024-01-15",
+          total: "3,200₴",
+          status: "completed",
+        },
+        {
+          id: "ORD003",
+          date: "2023-12-28",
+          total: "1,800₴",
+          status: "completed",
+        },
+      ],
     },
     {
       name: "Марія Коваленко",
@@ -333,6 +373,23 @@ const AdminCustomers = () => {
       phone: "+380671234567",
       orders: 3,
       spent: "8,280₴",
+      address: "м. Львів, вул. Франка 25, кв. 7",
+      registrationDate: "2024-01-10",
+      lastOrder: "2024-02-23",
+      orderHistory: [
+        {
+          id: "ORD004",
+          date: "2024-02-23",
+          total: "1,280₴",
+          status: "completed",
+        },
+        {
+          id: "ORD005",
+          date: "2024-02-10",
+          total: "3,500₴",
+          status: "completed",
+        },
+      ],
     },
   ];
 
@@ -419,7 +476,13 @@ const AdminCustomers = () => {
                   <td className="px-6 py-4">{customer.orders}</td>
                   <td className="px-6 py-4">{customer.spent}</td>
                   <td className="px-6 py-4">
-                    <Button variant="ghost" size="sm">Деталі</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedCustomer(customer)}
+                    >
+                      Деталі
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -427,6 +490,92 @@ const AdminCustomers = () => {
           </table>
         </div>
       </Card>
+
+      <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Профіль клієнта</DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[80vh]">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Основна інформація</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{selectedCustomer?.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{selectedCustomer?.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{selectedCustomer?.phone}</p>
+                  </div>
+                  {selectedCustomer?.address && (
+                    <div className="flex items-center gap-2">
+                      <Store className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm">{selectedCustomer.address}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Статистика</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Дата реєстрації</p>
+                    <p className="font-medium">{selectedCustomer?.registrationDate}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Останнє замовлення</p>
+                    <p className="font-medium">{selectedCustomer?.lastOrder}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Всього замовлень</p>
+                    <p className="font-medium">{selectedCustomer?.orders}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Загальна сума</p>
+                    <p className="font-medium">{selectedCustomer?.spent}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Історія замовлень</h3>
+                <div className="space-y-4">
+                  {selectedCustomer?.orderHistory?.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{order.id}</p>
+                        <p className="text-sm text-muted-foreground">{order.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{order.total}</p>
+                        <span className={cn(
+                          "px-2 py-1 rounded-full text-xs font-medium",
+                          order.status === "completed" ? "bg-green-100 text-green-800" : 
+                          "bg-yellow-100 text-yellow-800"
+                        )}>
+                          {order.status === "completed" ? "Виконано" : "Очікує"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
