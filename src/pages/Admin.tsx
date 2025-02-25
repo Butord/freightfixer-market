@@ -28,6 +28,7 @@ import AdminCategories from "./AdminCategories";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 const AdminDashboard = () => {
   const stats = [
@@ -581,58 +582,189 @@ const AdminCustomers = () => {
 };
 
 const AdminSettings = () => {
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  
   const settingsSections = [
     {
+      id: "store",
       title: "Магазин",
       icon: Store,
       description: "Налаштування магазину, валюта, локалізація",
       settings: [
-        { name: "Назва магазину", value: "Мій магазин" },
-        { name: "Валюта", value: "UAH" },
-        { name: "Мова", value: "Українська" },
+        { name: "Назва магазину", value: "Мій магазин", type: "text" },
+        { name: "Валюта", value: "UAH", type: "select", options: ["UAH", "USD", "EUR"] },
+        { name: "Мова", value: "Українська", type: "select", options: ["Українська", "English"] },
+        { name: "Опис магазину", value: "Найкращий магазин електроніки", type: "textarea" },
+        { name: "Телефон підтримки", value: "+380501234567", type: "text" },
+        { name: "Email підтримки", value: "support@store.com", type: "email" },
       ]
     },
     {
+      id: "notifications",
       title: "Сповіщення",
       icon: Bell,
       description: "Налаштування email та SMS сповіщень",
       settings: [
-        { name: "Email сповіщення", value: "Увімкнено" },
-        { name: "SMS сповіщення", value: "Вимкнено" },
-        { name: "Push сповіщення", value: "Увімкнено" },
+        { name: "Email сповіщення", value: true, type: "switch" },
+        { name: "SMS сповіщення", value: false, type: "switch" },
+        { name: "Push сповіщення", value: true, type: "switch" },
+        { name: "Шаблон email", value: "Дякуємо за замовлення {order_id}", type: "textarea" },
+      ]
+    },
+    {
+      id: "shipping",
+      title: "Доставка",
+      icon: Package,
+      description: "Налаштування методів доставки",
+      settings: [
+        { name: "Нова Пошта", value: true, type: "switch" },
+        { name: "Укрпошта", value: true, type: "switch" },
+        { name: "Самовивіз", value: true, type: "switch" },
+        { name: "API ключ Нової Пошти", value: "************", type: "password" },
+      ]
+    },
+    {
+      id: "payment",
+      title: "Оплата",
+      icon: CreditCard,
+      description: "Налаштування методів оплати",
+      settings: [
+        { name: "LiqPay", value: true, type: "switch" },
+        { name: "Оплата при отриманні", value: true, type: "switch" },
+        { name: "Банківський переказ", value: false, type: "switch" },
+        { name: "Публічний ключ LiqPay", value: "************", type: "password" },
+        { name: "Приватний ключ LiqPay", value: "************", type: "password" },
       ]
     }
   ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Налаштування</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Налаштування</h2>
+        <Button>Зберегти всі зміни</Button>
+      </div>
       
       <div className="grid gap-4 md:grid-cols-2">
         {settingsSections.map((section) => (
-          <Card key={section.title} className="p-6">
+          <Card key={section.id} className="p-6">
             <div className="flex items-start gap-4">
               <div className="rounded-lg bg-primary/10 p-2">
                 <section.icon className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-medium">{section.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {section.description}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium">{section.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {section.description}
+                    </p>
+                  </div>
+                  <Dialog 
+                    open={editingSection === section.id} 
+                    onOpenChange={(open) => setEditingSection(open ? section.id : null)}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Редагувати
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Редагування {section.title.toLowerCase()}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        {section.settings.map((setting) => (
+                          <div key={setting.name} className="flex flex-col gap-2">
+                            <label className="text-sm font-medium">
+                              {setting.name}
+                            </label>
+                            {setting.type === "text" && (
+                              <Input
+                                defaultValue={setting.value as string}
+                                type="text"
+                              />
+                            )}
+                            {setting.type === "email" && (
+                              <Input
+                                defaultValue={setting.value as string}
+                                type="email"
+                              />
+                            )}
+                            {setting.type === "password" && (
+                              <Input
+                                defaultValue={setting.value as string}
+                                type="password"
+                              />
+                            )}
+                            {setting.type === "textarea" && (
+                              <textarea
+                                className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                defaultValue={setting.value as string}
+                              />
+                            )}
+                            {setting.type === "select" && (
+                              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                {setting.options?.map((option) => (
+                                  <option 
+                                    key={option} 
+                                    selected={option === setting.value}
+                                  >
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            {setting.type === "switch" && (
+                              <div className="flex items-center space-x-2">
+                                <Switch 
+                                  defaultChecked={setting.value as boolean} 
+                                  id={`${section.id}-${setting.name}`}
+                                />
+                                <label 
+                                  htmlFor={`${section.id}-${setting.name}`}
+                                  className="text-sm text-muted-foreground"
+                                >
+                                  {setting.value ? "Увімкнено" : "Вимкнено"}
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditingSection(null)}
+                        >
+                          Скасувати
+                        </Button>
+                        <Button onClick={() => setEditingSection(null)}>
+                          Зберегти
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <div className="mt-4 space-y-3">
-                  {section.settings.map((setting) => (
+                  {section.settings.slice(0, 3).map((setting) => (
                     <div key={setting.name} className="flex items-center justify-between">
                       <span className="text-sm">{setting.name}</span>
                       <span className="text-sm text-muted-foreground">
-                        {setting.value}
+                        {typeof setting.value === "boolean" 
+                          ? (setting.value ? "Увімкнено" : "Вимкнено")
+                          : (setting.type === "password" 
+                            ? "••••••••" 
+                            : setting.value)}
                       </span>
                     </div>
                   ))}
+                  {section.settings.length > 3 && (
+                    <p className="text-sm text-muted-foreground">
+                      +{section.settings.length - 3} інших налаштувань
+                    </p>
+                  )}
                 </div>
-                <Button className="mt-4" variant="outline">
-                  Змінити налаштування
-                </Button>
               </div>
             </div>
           </Card>
