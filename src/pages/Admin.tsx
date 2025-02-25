@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   Bell,
   Store,
   Search,
+  Globe,
 } from "lucide-react";
 import {
   Dialog,
@@ -638,6 +638,64 @@ const AdminSettings = () => {
         { name: "Публічний ключ LiqPay", value: "************", type: "password" },
         { name: "Приватний ключ LiqPay", value: "************", type: "password" },
       ]
+    },
+    {
+      id: "seo",
+      title: "SEO",
+      icon: Globe,
+      description: "Налаштування для пошукової оптимізації",
+      settings: [
+        { 
+          name: "META Title", 
+          value: "Мій магазин - Найкращі товари за найкращими цінами", 
+          type: "text" 
+        },
+        { 
+          name: "META Description", 
+          value: "Широкий вибір електроніки та аксесуарів. Швидка доставка по всій Україні. Гарантія якості та найкращі ціни.", 
+          type: "textarea" 
+        },
+        { 
+          name: "META Keywords", 
+          value: "електроніка, гаджети, аксесуари, смартфони, ноутбуки", 
+          type: "textarea" 
+        },
+        { 
+          name: "Канонічні URL", 
+          value: true, 
+          type: "switch" 
+        },
+        { 
+          name: "Автоматичні Alt-теги", 
+          value: true, 
+          type: "switch" 
+        },
+        { 
+          name: "Robots.txt", 
+          value: "User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /cart/\nSitemap: https://example.com/sitemap.xml", 
+          type: "textarea" 
+        },
+        { 
+          name: "Структуровані дані", 
+          value: true, 
+          type: "switch" 
+        },
+        { 
+          name: "Open Graph теги", 
+          value: true, 
+          type: "switch" 
+        },
+        { 
+          name: "Sitemap генерація", 
+          value: true, 
+          type: "switch" 
+        },
+        {
+          name: "Google Analytics ID",
+          value: "UA-XXXXXXXXX-X",
+          type: "text"
+        }
+      ]
     }
   ];
 
@@ -758,7 +816,9 @@ const AdminSettings = () => {
                           ? (setting.value ? "Увімкнено" : "Вимкнено")
                           : (setting.type === "password" 
                             ? "••••••••" 
-                            : setting.value)}
+                            : (typeof setting.value === "string" && setting.value.length > 50
+                              ? `${setting.value.substring(0, 50)}...`
+                              : setting.value))}
                       </span>
                     </div>
                   ))}
