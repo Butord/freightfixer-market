@@ -9,10 +9,11 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Plus, ImagePlus } from "lucide-react";
+import { Plus, ImagePlus, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Separator } from "@/components/ui/separator";
 import ApiService from "@/services/api";
 import type { Category } from "@/types/api";
 
@@ -183,7 +184,7 @@ const AdminCategories = () => {
       />
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent>
+        <SheetContent className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
               {selectedCategory ? "Редагувати категорію" : "Додати нову категорію"}
@@ -191,28 +192,81 @@ const AdminCategories = () => {
           </SheetHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Назва категорії
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                defaultValue={selectedCategory?.name}
-                className="w-full rounded-md border border-gray-200 p-2"
-              />
-            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">
+                  Назва категорії
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  defaultValue={selectedCategory?.name}
+                  className="w-full rounded-md border border-gray-200 p-2"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Зображення
-              </label>
-              <ImageUpload
-                previewUrl={previewImage}
-                onChange={handleImageChange}
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Зображення
+                </label>
+                <ImageUpload
+                  previewUrl={previewImage}
+                  onChange={handleImageChange}
+                />
+              </div>
+
+              <Separator className="my-4" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <h4 className="font-medium">SEO налаштування</h4>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="meta_title" className="text-sm font-medium">
+                    META Title
+                  </label>
+                  <input
+                    id="meta_title"
+                    name="meta_title"
+                    type="text"
+                    defaultValue={selectedCategory?.meta_title}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="Найкращі товари в категорії {назва категорії}"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="meta_description" className="text-sm font-medium">
+                    META Description
+                  </label>
+                  <textarea
+                    id="meta_description"
+                    name="meta_description"
+                    rows={3}
+                    defaultValue={selectedCategory?.meta_description}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="Широкий вибір товарів в категорії {назва категорії}. Найкращі ціни та швидка доставка."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="meta_keywords" className="text-sm font-medium">
+                    META Keywords
+                  </label>
+                  <textarea
+                    id="meta_keywords"
+                    name="meta_keywords"
+                    rows={2}
+                    defaultValue={selectedCategory?.meta_keywords}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="категорія, товари, ключові слова через кому"
+                  />
+                </div>
+              </div>
             </div>
 
             <SheetFooter>

@@ -9,10 +9,11 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Plus } from "lucide-react";
+import { ImagePlus, Plus, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Separator } from "@/components/ui/separator";
 import ApiService from "@/services/api";
 import type { Product } from "@/types/api";
 
@@ -203,7 +204,7 @@ const AdminProducts = () => {
       />
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent>
+        <SheetContent className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
               {selectedProduct ? "Редагувати товар" : "Додати новий товар"}
@@ -211,75 +212,128 @@ const AdminProducts = () => {
           </SheetHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Назва товару
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                defaultValue={selectedProduct?.name}
-                className="w-full rounded-md border border-gray-200 p-2"
-              />
-            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">
+                  Назва товару
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  defaultValue={selectedProduct?.name}
+                  className="w-full rounded-md border border-gray-200 p-2"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label htmlFor="price" className="text-sm font-medium">
-                Ціна
-              </label>
-              <input
-                id="price"
-                name="price"
-                type="number"
-                required
-                defaultValue={selectedProduct?.price}
-                className="w-full rounded-md border border-gray-200 p-2"
-              />
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="price" className="text-sm font-medium">
+                  Ціна
+                </label>
+                <input
+                  id="price"
+                  name="price"
+                  type="number"
+                  required
+                  defaultValue={selectedProduct?.price}
+                  className="w-full rounded-md border border-gray-200 p-2"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium">
-                Опис
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={4}
-                defaultValue={selectedProduct?.description}
-                className="w-full rounded-md border border-gray-200 p-2"
-              />
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium">
+                  Опис
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows={4}
+                  defaultValue={selectedProduct?.description}
+                  className="w-full rounded-md border border-gray-200 p-2"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label htmlFor="category_id" className="text-sm font-medium">
-                Категорія
-              </label>
-              <select
-                id="category_id"
-                name="category_id"
-                defaultValue={selectedProduct?.category_id}
-                className="w-full rounded-md border border-gray-200 p-2"
-                required
-              >
-                <option value="">Виберіть категорію</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="category_id" className="text-sm font-medium">
+                  Категорія
+                </label>
+                <select
+                  id="category_id"
+                  name="category_id"
+                  defaultValue={selectedProduct?.category_id}
+                  className="w-full rounded-md border border-gray-200 p-2"
+                  required
+                >
+                  <option value="">Виберіть категорію</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Зображення
-              </label>
-              <ImageUpload
-                previewUrl={previewImage}
-                onChange={handleImageChange}
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Зображення
+                </label>
+                <ImageUpload
+                  previewUrl={previewImage}
+                  onChange={handleImageChange}
+                />
+              </div>
+
+              <Separator className="my-4" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  <h4 className="font-medium">SEO налаштування</h4>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="meta_title" className="text-sm font-medium">
+                    META Title
+                  </label>
+                  <input
+                    id="meta_title"
+                    name="meta_title"
+                    type="text"
+                    defaultValue={selectedProduct?.meta_title}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="Купити {назва товару} за найкращою ціною"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="meta_description" className="text-sm font-medium">
+                    META Description
+                  </label>
+                  <textarea
+                    id="meta_description"
+                    name="meta_description"
+                    rows={3}
+                    defaultValue={selectedProduct?.meta_description}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="✅ Офіційна гарантія на {назва товару} ➜ Найкраща ціна ➜ Швидка доставка ➜ Відгуки покупців"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="meta_keywords" className="text-sm font-medium">
+                    META Keywords
+                  </label>
+                  <textarea
+                    id="meta_keywords"
+                    name="meta_keywords"
+                    rows={2}
+                    defaultValue={selectedProduct?.meta_keywords}
+                    className="w-full rounded-md border border-gray-200 p-2"
+                    placeholder="назва товару, купити, ціна, доставка"
+                  />
+                </div>
+              </div>
             </div>
 
             <SheetFooter>
