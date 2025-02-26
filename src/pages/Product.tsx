@@ -1,5 +1,5 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,10 +17,13 @@ import {
 } from "@/components/ui/tabs";
 import { Package, Truck, Shield } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
+import { useToast } from "@/components/ui/use-toast";
 
 const Product = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addItem);
+  const { toast } = useToast();
 
   // Тимчасові дані для демонстрації
   const product = {
@@ -58,6 +61,34 @@ const Product = () => {
       price: product.price,
       image: product.image,
     });
+
+    toast({
+      title: "Товар додано у кошик",
+      description: `${product.name} було додано до вашого кошика`,
+      duration: 3000,
+    });
+  };
+
+  const handleBuyNow = () => {
+    // Додаємо товар у кошик
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    
+    // Показуємо повідомлення
+    toast({
+      title: "Товар додано у кошик",
+      description: "Переходимо до оформлення замовлення...",
+      duration: 2000,
+    });
+    
+    // Перенаправляємо на сторінку оформлення замовлення
+    setTimeout(() => {
+      navigate("/cart");
+    }, 500);
   };
 
   return (
@@ -114,7 +145,7 @@ const Product = () => {
             <Button className="flex-1" size="lg" onClick={handleAddToCart}>
               Додати в кошик
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" onClick={handleBuyNow}>
               Купити зараз
             </Button>
           </CardFooter>
