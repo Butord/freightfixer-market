@@ -104,25 +104,27 @@ const Home = () => {
         <h2 className="text-2xl font-semibold mb-6">Популярні товари</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {FEATURED_PRODUCTS.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-              </CardHeader>
-              <CardContent>
-                <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
-                <CardDescription>{product.category}</CardDescription>
-                <p className="text-lg font-semibold text-primary mt-2">
-                  {product.price.toLocaleString()} грн
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">Додати в кошик</Button>
-              </CardFooter>
-            </Card>
+            <Link key={product.id} to={`/product/${product.id}`}>
+              <Card className="hover:shadow-lg transition-shadow h-full">
+                <CardHeader>
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                </CardHeader>
+                <CardContent>
+                  <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
+                  <CardDescription>{product.category}</CardDescription>
+                  <p className="text-lg font-semibold text-primary mt-2">
+                    {product.price.toLocaleString()} грн
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full">Додати в кошик</Button>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       </section>
