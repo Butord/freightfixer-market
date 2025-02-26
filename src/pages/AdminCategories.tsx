@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -245,7 +246,7 @@ const AdminCategories = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "{{categoryName}} - купити в інтернет-магазині | Мій магазин"
+                            "{'{{categoryName}}'} - купити в інтернет-магазині | Мій магазин"
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -276,7 +277,7 @@ const AdminCategories = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "Великий вибір товарів в категорії {{categoryName}}. ✓ Офіційна гарантія ➜ Кращі ціни ➜ Доставка по всій Україні"
+                            "Великий вибір товарів в категорії {'{{categoryName}}'}. ✓ Офіційна гарантія ➜ Кращі ціни ➜ Доставка по всій Україні"
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -307,7 +308,7 @@ const AdminCategories = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "{{categoryName}}, купити {{categoryName}}, ціна, каталог"
+                            "{'{{categoryName}}'}, купити {'{{categoryName}}'}, ціна, каталог"
                           </p>
                         </TooltipContent>
                       </Tooltip>

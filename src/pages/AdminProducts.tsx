@@ -313,7 +313,7 @@ const AdminProducts = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "Купити {{productName}} за найкращою ціною в Україні | Мій магазин"
+                            "Купити {'{{productName}}'} за найкращою ціною в Україні | Мій магазин"
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -344,7 +344,7 @@ const AdminProducts = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "✅ {{productName}} в наявності! Гарантія якості ➜ Найкраща ціна ➜ Швидка доставка по всій Україні ✓ Відгуки покупців"
+                            "✅ {'{{productName}}'} в наявності! Гарантія якості ➜ Найкраща ціна ➜ Швидка доставка по всій Україні ✓ Відгуки покупців"
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -375,7 +375,7 @@ const AdminProducts = () => {
                         <TooltipContent side="top">
                           <p className="w-[250px] text-xs">
                             Якщо не заповнено, буде використано шаблон:<br />
-                            "{{productName}}, купити {{productName}}, ціна, доставка"
+                            "{'{{productName}}'}, купити {'{{productName}}'}, ціна, доставка"
                           </p>
                         </TooltipContent>
                       </Tooltip>
