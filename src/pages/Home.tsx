@@ -10,6 +10,8 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/stores/cartStore";
+import { toast } from "sonner";
 
 const FEATURED_CATEGORIES = [
   { id: 1, name: "Двигун", image: "/placeholder.svg" },
@@ -85,6 +87,22 @@ const NEW_PRODUCTS = [
 ];
 
 const Home = () => {
+  const addToCart = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    e.preventDefault(); // Зупиняємо стандартну дію посилання
+    e.stopPropagation(); // Зупиняємо подальше поширення події
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    
+    toast.success(`${product.name} додано в кошик`);
+  };
+
   return (
     <div className="space-y-12 animate-fade-in">
       {/* Hero Section */}
@@ -139,9 +157,9 @@ const Home = () => {
         <h2 className="text-2xl font-semibold mb-6">Новинки</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {NEW_PRODUCTS.map((product) => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <Card className="hover:shadow-lg transition-shadow h-full group">
-                <div className="relative">
+            <Card key={product.id} className="hover:shadow-lg transition-shadow h-full group">
+              <div className="relative">
+                <Link to={`/product/${product.id}`}>
                   <CardHeader>
                     <img
                       src={product.image}
@@ -152,19 +170,26 @@ const Home = () => {
                   <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                     Новинка
                   </span>
-                </div>
-                <CardContent>
+                </Link>
+              </div>
+              <CardContent>
+                <Link to={`/product/${product.id}`}>
                   <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
                   <CardDescription>{product.category}</CardDescription>
                   <p className="text-lg font-semibold text-primary mt-2">
                     {product.price.toLocaleString()} грн
                   </p>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full">Додати в кошик</Button>
-                </CardFooter>
-              </Card>
-            </Link>
+                </Link>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full"
+                  onClick={(e) => handleAddToCart(e, product)}
+                >
+                  Додати в кошик
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </section>
@@ -174,8 +199,8 @@ const Home = () => {
         <h2 className="text-2xl font-semibold mb-6">Популярні товари</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {FEATURED_PRODUCTS.map((product) => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <Card className="hover:shadow-lg transition-shadow h-full">
+            <Card key={product.id} className="hover:shadow-lg transition-shadow h-full">
+              <Link to={`/product/${product.id}`}>
                 <CardHeader>
                   <img
                     src={product.image}
@@ -183,18 +208,25 @@ const Home = () => {
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
                 </CardHeader>
-                <CardContent>
+              </Link>
+              <CardContent>
+                <Link to={`/product/${product.id}`}>
                   <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
                   <CardDescription>{product.category}</CardDescription>
                   <p className="text-lg font-semibold text-primary mt-2">
                     {product.price.toLocaleString()} грн
                   </p>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full">Додати в кошик</Button>
-                </CardFooter>
-              </Card>
-            </Link>
+                </Link>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full"
+                  onClick={(e) => handleAddToCart(e, product)}
+                >
+                  Додати в кошик
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </section>

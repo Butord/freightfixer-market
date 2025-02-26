@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Minus, Plus, Trash2, Truck } from "lucide-react";
+import { Minus, Plus, Trash2, Truck, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,15 +18,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCartStore } from "@/stores/cartStore";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const DELIVERY_METHODS = {
   NOVA_POSHTA: "nova_poshta",
   UKRPOSHTA: "ukrposhta",
 } as const;
 
+const PAYMENT_METHODS = {
+  CASH_ON_DELIVERY: "cash_on_delivery",
+  CARD: "card",
+  BANK_TRANSFER: "bank_transfer",
+} as const;
+
 const Cart = () => {
-  const { items, removeItem, updateQuantity } = useCartStore();
+  const { items, removeItem, updateQuantity, clearCart } = useCartStore();
   const [deliveryMethod, setDeliveryMethod] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [city, setCity] = useState("");
   const [department, setDepartment] = useState("");
 
@@ -53,6 +62,11 @@ const Cart = () => {
   };
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleCheckout = () => {
+    alert(`Замовлення оформлено! Сума до сплати: ${total.toLocaleString()} грн. Спосіб оплати: ${paymentMethod}`);
+    clearCart();
+  };
 
   if (items.length === 0) {
     return (
@@ -177,6 +191,33 @@ const Cart = () => {
             </CardContent>
           </Card>
 
+          {/* Додамо вибір способу оплати */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Спосіб оплати</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup onValueChange={setPaymentMethod} className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value={PAYMENT_METHODS.CASH_ON_DELIVERY} id="payment-cash" />
+                  <Label htmlFor="payment-cash" className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" /> Накладений платіж
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value={PAYMENT_METHODS.CARD} id="payment-card" />
+                  <Label htmlFor="payment-card" className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" /> Оплата карткою
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value={PAYMENT_METHODS.BANK_TRANSFER} id="payment-bank" />
+                  <Label htmlFor="payment-bank">Банківський переказ</Label>
+                </div>
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Підсумок замовлення</CardTitle>
@@ -200,7 +241,8 @@ const Cart = () => {
             <CardFooter>
               <Button 
                 className="w-full" 
-                disabled={!deliveryMethod || !city || !department}
+                disabled={!deliveryMethod || !city || !department || !paymentMethod}
+                onClick={handleCheckout}
               >
                 Оформити замовлення
               </Button>
