@@ -16,6 +16,7 @@ import {
   Store,
   Search,
   Globe,
+  Home,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
+import AdminHomeSections from "./AdminHomeSections";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -591,7 +593,7 @@ const Admin = () => {
               to="/admin"
               className={cn(
                 "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
-                isLinkActive("/admin") && !isLinkActive("/admin/products") && !isLinkActive("/admin/categories") && !isLinkActive("/admin/orders") && !isLinkActive("/admin/customers") && !isLinkActive("/admin/settings")
+                isLinkActive("/admin") && !isLinkActive("/admin/products") && !isLinkActive("/admin/categories") && !isLinkActive("/admin/home-sections") && !isLinkActive("/admin/orders") && !isLinkActive("/admin/customers") && !isLinkActive("/admin/settings")
                   ? "bg-primary/10 text-primary font-medium"
                   : "hover:bg-muted"
               )}
@@ -624,6 +626,19 @@ const Admin = () => {
             >
               <FolderTree className="h-4 w-4" />
               <span>Категорії</span>
+            </Link>
+
+            <Link
+              to="/admin/home-sections"
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
+                isLinkActive("/admin/home-sections")
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "hover:bg-muted"
+              )}
+            >
+              <Home className="h-4 w-4" />
+              <span>Головна сторінка</span>
             </Link>
 
             <Link
@@ -693,6 +708,7 @@ const Admin = () => {
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/categories" element={<AdminCategories />} />
+            <Route path="/home-sections" element={<AdminHomeSections />} />
             <Route path="/orders" element={<AdminOrders />} />
             <Route path="/customers" element={<AdminCustomers />} />
             <Route path="/settings" element={<AdminSettings />} />

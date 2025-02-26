@@ -49,6 +49,41 @@ const FEATURED_PRODUCTS = [
   },
 ];
 
+const NEW_PRODUCTS = [
+  {
+    id: 5,
+    name: "Світлодіодні фари",
+    price: 7800,
+    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=500&h=350&auto=format&fit=crop",
+    category: "Освітлення",
+    isNew: true,
+  },
+  {
+    id: 6,
+    name: "Сенсор ABS",
+    price: 1200,
+    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=500&h=350&auto=format&fit=crop",
+    category: "Електроніка",
+    isNew: true,
+  },
+  {
+    id: 7,
+    name: "Турбокомпресор",
+    price: 22000,
+    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&h=350&auto=format&fit=crop",
+    category: "Двигун",
+    isNew: true,
+  },
+  {
+    id: 8,
+    name: "Комплект ГРМ",
+    price: 4500,
+    image: "/placeholder.svg",
+    category: "Двигун",
+    isNew: true,
+  },
+];
+
 const Home = () => {
   return (
     <div className="space-y-12 animate-fade-in">
@@ -93,6 +128,41 @@ const Home = () => {
                 <CardContent>
                   <CardTitle className="text-center">{category.name}</CardTitle>
                 </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* New Products Section */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-6">Новинки</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {NEW_PRODUCTS.map((product) => (
+            <Link key={product.id} to={`/product/${product.id}`}>
+              <Card className="hover:shadow-lg transition-shadow h-full group">
+                <div className="relative">
+                  <CardHeader>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
+                    />
+                  </CardHeader>
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    Новинка
+                  </span>
+                </div>
+                <CardContent>
+                  <CardTitle className="text-lg mb-2">{product.name}</CardTitle>
+                  <CardDescription>{product.category}</CardDescription>
+                  <p className="text-lg font-semibold text-primary mt-2">
+                    {product.price.toLocaleString()} грн
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full">Додати в кошик</Button>
+                </CardFooter>
               </Card>
             </Link>
           ))}
