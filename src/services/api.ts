@@ -1,7 +1,8 @@
 
 import { Product, Category, Order } from '@/types/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Змініть це значення на адресу вашого API
+const API_URL = import.meta.env.VITE_API_URL || 'https://ваш-сайт.com/api';
 
 class ApiService {
   // Товари
