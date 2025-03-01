@@ -1,24 +1,14 @@
 
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-$host = 'localhost';
-$db   = 'your_database';
-$user = 'your_username';
-$pass = 'your_password';
-$charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
-
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=$charset", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = require 'db_config.php';
     $method = $_SERVER['REQUEST_METHOD'];
 
     switch ($method) {
@@ -27,11 +17,11 @@ try {
                 $stmt = $pdo->prepare('SELECT * FROM categories WHERE id = ?');
                 $stmt->execute([$_GET['id']]);
                 $category = $stmt->fetch();
-                echo json_encode(['status' => 'success', 'data' => $category]);
+                echo json_encode($category);
             } else {
                 $stmt = $pdo->query('SELECT * FROM categories ORDER BY name');
                 $categories = $stmt->fetchAll();
-                echo json_encode(['status' => 'success', 'data' => $categories]);
+                echo json_encode($categories);
             }
             break;
 
@@ -61,7 +51,7 @@ try {
             $stmt->execute([$category_id]);
             $category = $stmt->fetch();
 
-            echo json_encode(['status' => 'success', 'data' => $category]);
+            echo json_encode($category);
             break;
 
         case 'PUT':
@@ -114,7 +104,7 @@ try {
                 $stmt->execute([$id]);
                 $category = $stmt->fetch();
 
-                echo json_encode(['status' => 'success', 'data' => $category]);
+                echo json_encode($category);
             }
             break;
 

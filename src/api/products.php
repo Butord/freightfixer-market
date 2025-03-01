@@ -1,30 +1,14 @@
 
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-$host = 'localhost';
-$db   = 'your_database';
-$user = 'your_username';
-$pass = 'your_password';
-$charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
-
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    $pdo = require 'db_config.php';
     $method = $_SERVER['REQUEST_METHOD'];
 
     switch ($method) {
@@ -34,12 +18,12 @@ try {
                 $stmt = $pdo->prepare('SELECT * FROM products WHERE id = ?');
                 $stmt->execute([$_GET['id']]);
                 $product = $stmt->fetch();
-                echo json_encode(['status' => 'success', 'data' => $product]);
+                echo json_encode($product);
             } else {
                 // Отримання всіх товарів
                 $stmt = $pdo->query('SELECT * FROM products ORDER BY id DESC');
                 $products = $stmt->fetchAll();
-                echo json_encode(['status' => 'success', 'data' => $products]);
+                echo json_encode($products);
             }
             break;
 
@@ -74,7 +58,7 @@ try {
             $stmt->execute([$product_id]);
             $product = $stmt->fetch();
 
-            echo json_encode(['status' => 'success', 'data' => $product]);
+            echo json_encode($product);
             break;
 
         case 'PUT':
@@ -138,7 +122,7 @@ try {
                 $stmt->execute([$id]);
                 $product = $stmt->fetch();
 
-                echo json_encode(['status' => 'success', 'data' => $product]);
+                echo json_encode($product);
             }
             break;
 
