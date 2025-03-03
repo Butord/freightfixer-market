@@ -1,8 +1,8 @@
 
 import { Product, Category, Order } from '@/types/api';
 
-// Змініть це значення на адресу вашого API
-const API_URL = import.meta.env.VITE_API_URL || 'https://ваш-сайт.com/api';
+// Адреса API з урахуванням базового шляху
+const API_URL = import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api';
 
 class ApiService {
   // Товари

@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/arm3/", // Додаємо базовий шлях для статичних файлів
+  base: "/arm3/", // Базовий шлях для статичних файлів
   server: {
     host: "::",
     port: 8080,
