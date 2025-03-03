@@ -33,6 +33,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await ApiService.login(credentials);
+          
+          // Перевіряємо, чи адміністратор активований
+          if (response.user.role === 'admin' && response.user.status === 'pending') {
+            set({ isLoading: false });
+            toast.error('Ваш обліковий запис адміністратора очікує підтвердження');
+            return;
+          }
+          
           set({
             user: response.user,
             token: response.token,
@@ -54,6 +62,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await ApiService.register(userData);
+          
+          // Перевіряємо, чи це реєстрація адміністратора
+          if (userData.role === 'admin') {
+            toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
+            set({ isLoading: false });
+            return;
+          }
+          
           set({
             user: response.user,
             token: response.token,

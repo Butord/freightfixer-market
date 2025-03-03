@@ -5,144 +5,117 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { RegisterRequest } from '@/types/auth';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 export default function RegisterForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState<'user' | 'admin'>('user');
+  const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
-  const { register, isLoading } = useAuthStore();
-  const [formData, setFormData] = useState<RegisterRequest>({
-    name: '',
-    email: '',
-    password: '',
-    password_confirm: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Очищаємо помилки при зміні поля
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = "Ім'я обов'язкове";
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = "Email обов'язковий";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Введіть коректний email";
-    }
-    
-    if (!formData.password) {
-      newErrors.password = "Пароль обов'язковий";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Пароль повинен містити щонайменше 6 символів";
-    }
-    
-    if (formData.password !== formData.password_confirm) {
-      newErrors.password_confirm = "Паролі не співпадають";
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const { register } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    if (!validateForm()) return;
-    
-    await register(formData);
-    navigate('/');
+    try {
+      await register({
+        name,
+        email,
+        password,
+        password_confirm: confirmPassword,
+        role
+      });
+      
+      if (role === 'admin') {
+        navigate('/login');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Реєстрація</CardTitle>
-        <CardDescription>Створіть новий обліковий запис</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Ім'я</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={formData.name}
-              onChange={handleChange}
-            />
-            {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="email@example.com"
-              required
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Пароль</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-            />
-            {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password_confirm">Підтвердження пароля</Label>
-            <Input
-              id="password_confirm"
-              name="password_confirm"
-              type="password"
-              required
-              value={formData.password_confirm}
-              onChange={handleChange}
-            />
-            {errors.password_confirm && <p className="text-sm text-red-500">{errors.password_confirm}</p>}
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Вже маєте обліковий запис?{' '}
-          <Button variant="link" className="p-0" onClick={() => navigate('/login')}>
-            Увійти
-          </Button>
-        </p>
-      </CardFooter>
-    </Card>
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="name">Ім'я</Label>
+          <Input 
+            id="name" 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="password">Пароль</Label>
+          <Input 
+            id="password" 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="confirmPassword">Підтвердіть пароль</Label>
+          <Input 
+            id="confirmPassword" 
+            type="password" 
+            value={confirmPassword} 
+            onChange={(e) => setConfirmPassword(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="role">Роль</Label>
+          <Select value={role} onValueChange={(value) => setRole(value as 'user' | 'admin')}>
+            <SelectTrigger id="role">
+              <SelectValue placeholder="Виберіть роль" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">Користувач</SelectItem>
+              <SelectItem value="admin">Адміністратор</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
+        </Button>
+        
+        <div className="text-center text-sm mt-4">
+          <p>
+            Вже маєте обліковий запис?{' '}
+            <a href="/login" className="text-blue-600 hover:underline">
+              Увійти
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }

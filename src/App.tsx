@@ -15,6 +15,8 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ClientRegister from "./pages/ClientRegister";
+import AdminUsers from "./pages/AdminUsers";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./stores/authStore";
 
@@ -46,6 +48,7 @@ const App = () => {
               <Route path="cart" element={<Cart />} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
+              <Route path="client-register" element={<ClientRegister />} />
               
               {/* Захищені маршрути для авторизованих користувачів */}
               <Route element={<ProtectedRoute />}>
@@ -56,6 +59,7 @@ const App = () => {
               {/* Захищені маршрути для адміністраторів */}
               <Route element={<ProtectedRoute requireAdmin />}>
                 <Route path="admin/*" element={<Admin />} />
+                <Route path="admin/users" element={<AdminUsers />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />

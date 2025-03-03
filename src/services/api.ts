@@ -1,6 +1,5 @@
-
 import { Product, Category, Order } from '@/types/api';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '@/types/auth';
+import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
 // Адреса API з урахуванням базового шляху
 const API_URL = import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api';
@@ -53,6 +52,51 @@ class ApiService {
     }
     
     return response.json();
+  }
+
+  // Нові методи для керування користувачами
+  static async getUsers(token: string): Promise<User[]> {
+    const response = await fetch(`${API_URL}/users`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Не вдалося отримати список користувачів');
+    }
+    
+    return response.json();
+  }
+
+  static async updateUser(token: string, userData: UserUpdateRequest): Promise<User> {
+    const response = await fetch(`${API_URL}/users/${userData.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Не вдалося оновити дані користувача');
+    }
+    
+    return response.json();
+  }
+
+  static async deleteUser(token: string, id: number): Promise<void> {
+    const response = await fetch(`${API_URL}/users/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Не вдалося видалити користувача');
+    }
   }
 
   // Товари
