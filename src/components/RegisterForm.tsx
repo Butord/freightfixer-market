@@ -5,14 +5,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
@@ -28,14 +26,10 @@ export default function RegisterForm() {
         email,
         password,
         password_confirm: confirmPassword,
-        role
+        role: 'user' // Always register as a user through this form
       });
       
-      if (role === 'admin') {
-        navigate('/login');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error) {
       console.error(error);
     } finally {
@@ -88,19 +82,6 @@ export default function RegisterForm() {
             onChange={(e) => setConfirmPassword(e.target.value)} 
             required 
           />
-        </div>
-        
-        <div>
-          <Label htmlFor="role">Роль</Label>
-          <Select value={role} onValueChange={(value) => setRole(value as 'user' | 'admin')}>
-            <SelectTrigger id="role">
-              <SelectValue placeholder="Виберіть роль" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user">Користувач</SelectItem>
-              <SelectItem value="admin">Адміністратор</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         
         <Button type="submit" className="w-full" disabled={isLoading}>
