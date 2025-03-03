@@ -1,10 +1,60 @@
 
 import { Product, Category, Order } from '@/types/api';
+import { AuthResponse, LoginRequest, RegisterRequest, User } from '@/types/auth';
 
 // Адреса API з урахуванням базового шляху
 const API_URL = import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api';
 
 class ApiService {
+  // Методи автентифікації
+  static async login(credentials: LoginRequest): Promise<AuthResponse> {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Помилка авторизації');
+    }
+    
+    return response.json();
+  }
+
+  static async register(userData: RegisterRequest): Promise<AuthResponse> {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Помилка реєстрації');
+    }
+    
+    return response.json();
+  }
+
+  static async getCurrentUser(token: string): Promise<User> {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Не вдалося отримати дані користувача');
+    }
+    
+    return response.json();
+  }
+
   // Товари
   static async getProducts(): Promise<Product[]> {
     const response = await fetch(`${API_URL}/products`);

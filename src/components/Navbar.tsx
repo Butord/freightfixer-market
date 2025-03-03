@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useCartStore } from "@/stores/cartStore";
+import UserMenu from "@/components/UserMenu";
 
 const Navbar = () => {
   const cartItemsCount = useCartStore((state) => state.items.length);
@@ -68,6 +69,8 @@ const Navbar = () => {
               />
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             </div>
+
+            <UserMenu />
 
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
