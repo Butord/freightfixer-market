@@ -19,6 +19,7 @@ export interface RegisterRequest {
   password: string;
   password_confirm: string;
   role?: 'user' | 'admin';
+  adminSecretCode?: string; // Додаємо поле для секретного коду адміністратора
 }
 
 export interface AuthResponse {

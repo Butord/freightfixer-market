@@ -61,23 +61,42 @@ export const useAuthStore = create<AuthState>()(
       register: async (userData) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await ApiService.register(userData);
+          // Перевіряємо, чи це реєстрація адміністратора з використанням спеціального коду
+          const isFirstAdminSetup = userData.role === 'admin' && userData.adminSecretCode === import.meta.env.VITE_ADMIN_SECRET_CODE;
           
-          // Перевіряємо, чи це реєстрація адміністратора
-          if (userData.role === 'admin') {
-            toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
-            set({ isLoading: false });
-            return;
+          // Якщо є секретний код для першого адміністратора, видаляємо його з даних перед відправкою на сервер
+          if (isFirstAdminSetup) {
+            // Видаляємо секретний код з об'єкта перед відправкою на сервер
+            const { adminSecretCode, ...dataToSend } = userData;
+            const response = await ApiService.register(dataToSend);
+            
+            set({
+              user: response.user,
+              token: response.token,
+              isAuthenticated: true,
+              isAdmin: response.user.role === 'admin',
+              isLoading: false,
+            });
+            toast.success('Реєстрація адміністратора успішна!');
+          } else {
+            const response = await ApiService.register(userData);
+            
+            // Перевіряємо, чи це реєстрація адміністратора без секретного коду
+            if (userData.role === 'admin') {
+              toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
+              set({ isLoading: false });
+              return;
+            }
+            
+            set({
+              user: response.user,
+              token: response.token,
+              isAuthenticated: true,
+              isAdmin: response.user.role === 'admin',
+              isLoading: false,
+            });
+            toast.success('Реєстрація успішна!');
           }
-          
-          set({
-            user: response.user,
-            token: response.token,
-            isAuthenticated: true,
-            isAdmin: response.user.role === 'admin',
-            isLoading: false,
-          });
-          toast.success('Реєстрація успішна!');
         } catch (error) {
           set({
             isLoading: false,

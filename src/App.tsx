@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ClientRegister from "./pages/ClientRegister";
 import AdminUsers from "./pages/AdminUsers";
+import AdminSetup from "./pages/AdminSetup";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./stores/authStore";
 
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
               <Route path="client-register" element={<ClientRegister />} />
+              <Route path="admin-setup" element={<AdminSetup />} />
               
               {/* Захищені маршрути для авторизованих користувачів */}
               <Route element={<ProtectedRoute />}>
