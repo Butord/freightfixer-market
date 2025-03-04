@@ -25,6 +25,17 @@ CREATE TABLE products (
   FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
+-- Створення таблиці користувачів
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('user', 'admin') DEFAULT 'user',
+  status ENUM('active', 'pending') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Створення таблиці замовлень
 CREATE TABLE orders (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -34,7 +45,8 @@ CREATE TABLE orders (
   delivery_method VARCHAR(50),
   city VARCHAR(255),
   department VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Створення таблиці товарів у замовленні
