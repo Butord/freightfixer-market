@@ -18,6 +18,9 @@ import Register from "./pages/Register";
 import ClientRegister from "./pages/ClientRegister";
 import AdminUsers from "./pages/AdminUsers";
 import AdminSetup from "./pages/AdminSetup";
+import AdminPages from "./pages/AdminPages";
+import About from "./pages/About";
+import Contacts from "./pages/Contacts";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./stores/authStore";
 
@@ -51,6 +54,8 @@ const App = () => {
               <Route path="register" element={<Register />} />
               <Route path="client-register" element={<ClientRegister />} />
               <Route path="admin-setup" element={<AdminSetup />} />
+              <Route path="about" element={<About />} />
+              <Route path="contacts" element={<Contacts />} />
               
               {/* Захищені маршрути для авторизованих користувачів */}
               <Route element={<ProtectedRoute />}>

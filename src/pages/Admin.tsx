@@ -17,6 +17,7 @@ import {
   Search,
   Globe,
   Home,
+  FileText
 } from "lucide-react";
 import {
   Dialog,
@@ -31,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import AdminHomeSections from "./AdminHomeSections";
+import AdminPages from "./AdminPages";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -593,7 +595,7 @@ const Admin = () => {
               to="/admin"
               className={cn(
                 "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
-                isLinkActive("/admin") && !isLinkActive("/admin/products") && !isLinkActive("/admin/categories") && !isLinkActive("/admin/home-sections") && !isLinkActive("/admin/orders") && !isLinkActive("/admin/customers") && !isLinkActive("/admin/settings")
+                isLinkActive("/admin") && !isLinkActive("/admin/products") && !isLinkActive("/admin/categories") && !isLinkActive("/admin/home-sections") && !isLinkActive("/admin/orders") && !isLinkActive("/admin/customers") && !isLinkActive("/admin/settings") && !isLinkActive("/admin/pages")
                   ? "bg-primary/10 text-primary font-medium"
                   : "hover:bg-muted"
               )}
@@ -639,6 +641,19 @@ const Admin = () => {
             >
               <Home className="h-4 w-4" />
               <span>Головна сторінка</span>
+            </Link>
+
+            <Link
+              to="/admin/pages"
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-md text-sm transition-colors",
+                isLinkActive("/admin/pages")
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "hover:bg-muted"
+              )}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Статичні сторінки</span>
             </Link>
 
             <Link
@@ -709,6 +724,7 @@ const Admin = () => {
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/categories" element={<AdminCategories />} />
             <Route path="/home-sections" element={<AdminHomeSections />} />
+            <Route path="/pages" element={<AdminPages />} />
             <Route path="/orders" element={<AdminOrders />} />
             <Route path="/customers" element={<AdminCustomers />} />
             <Route path="/settings" element={<AdminSettings />} />
