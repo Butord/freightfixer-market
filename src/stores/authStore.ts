@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import ApiService from '@/services/api';
@@ -13,7 +12,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<{ success: boolean; message?: string }>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
@@ -38,7 +37,7 @@ export const useAuthStore = create<AuthState>()(
           if (response.user.role === 'admin' && response.user.status === 'pending') {
             set({ isLoading: false });
             toast.error('Ваш обліковий запис адміністратора очікує підтвердження');
-            return;
+            return { success: false, message: 'Ваш обліковий запис адміністратора очікує підтвердження' };
           }
           
           set({
@@ -49,12 +48,15 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           toast.success('Успішний вхід!');
+          return { success: true };
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Невідома помилка авторизації';
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Невідома помилка авторизації',
+            error: errorMessage,
           });
-          toast.error(error instanceof Error ? error.message : 'Невідома помилка авторизації');
+          toast.error(errorMessage);
+          return { success: false, message: errorMessage };
         }
       },
 

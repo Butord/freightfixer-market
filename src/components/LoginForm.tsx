@@ -15,16 +15,32 @@ export default function LoginForm() {
     email: '',
     password: '',
   });
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Скидаємо повідомлення про помилку при зміні даних форми
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(formData);
-    navigate('/');
+    setError(null);
+    
+    try {
+      // Викликаємо функцію входу та очікуємо її результат
+      const result = await login(formData);
+      
+      // Перенаправляємо користувача тільки якщо вхід був успішним
+      // В authStore тепер повертаємо результат операції
+      if (result && result.success) {
+        navigate('/');
+      }
+    } catch (err) {
+      // Встановлюємо повідомлення про помилку
+      setError(err instanceof Error ? err.message : 'Невідома помилка під час входу');
+    }
   };
 
   return (
@@ -35,6 +51,11 @@ export default function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
