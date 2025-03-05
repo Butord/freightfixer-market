@@ -83,8 +83,36 @@ function handleRegister() {
     // Set default role to 'user' if not specified
     $role = isset($data['role']) && $data['role'] === 'admin' ? 'admin' : 'user';
     
-    // Set status (admin accounts need approval)
-    $status = ($role === 'admin') ? 'pending' : 'active';
+    // Check if admin exists - if no admins exist and this is an admin registration with secretCode, auto-approve
+    $adminSecretCode = isset($data['adminSecretCode']) ? $data['adminSecretCode'] : '';
+    $isFirstAdmin = false;
+    
+    if ($role === 'admin') {
+        // Check if any admin exists
+        $adminCheck = $conn->query("SELECT id FROM users WHERE role = 'admin' AND status = 'active'");
+        $isFirstAdmin = ($adminCheck->num_rows == 0);
+        
+        // Verify secret code for first admin (should be set in your environment)
+        $secretCodeValid = false;
+        
+        // In a real application, you would store this in a secure environment variable
+        // For this example, we're using a hardcoded value - CHANGE THIS in production!
+        $correctSecretCode = "Butord098#"; // This should match your VITE_ADMIN_SECRET_CODE
+        
+        if ($isFirstAdmin && $adminSecretCode === $correctSecretCode) {
+            $secretCodeValid = true;
+        }
+        
+        // Set status based on admin validation
+        if ($isFirstAdmin && $secretCodeValid) {
+            $status = 'active'; // First admin with valid secret code is auto-activated
+        } else {
+            $status = 'pending'; // Regular admin registration needs approval
+        }
+    } else {
+        // Regular users are active by default
+        $status = 'active';
+    }
     
     // Hash the password
     $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
@@ -105,10 +133,16 @@ function handleRegister() {
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
         
+        $message = $isFirstAdmin && $status === 'active' 
+            ? 'First admin created successfully' 
+            : ($role === 'admin' && $status === 'pending' 
+                ? 'Admin registration pending approval' 
+                : 'User registered successfully');
+        
         http_response_code(201);
         echo json_encode([
             'success' => true,
-            'message' => 'User registered successfully',
+            'message' => $message,
             'user' => $user,
             'token' => $token
         ]);

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import ApiService from '@/services/api';
@@ -66,37 +67,39 @@ export const useAuthStore = create<AuthState>()(
           // Перевіряємо, чи це реєстрація адміністратора з використанням спеціального коду
           const isFirstAdminSetup = userData.role === 'admin' && userData.adminSecretCode === import.meta.env.VITE_ADMIN_SECRET_CODE;
           
-          // Якщо є секретний код для першого адміністратора, видаляємо його з даних перед відправкою на сервер
+          // Відправляємо секретний код на сервер для першого адміністратора
+          let dataToSend = userData;
+          
+          // Якщо це реєстрація першого адміністратора через AdminSetup, додаємо код
           if (isFirstAdminSetup) {
-            // Видаляємо секретний код з об'єкта перед відправкою на сервер
-            const { adminSecretCode, ...dataToSend } = userData;
-            const response = await ApiService.register(dataToSend);
-            
-            set({
-              user: response.user,
-              token: response.token,
-              isAuthenticated: true,
-              isAdmin: response.user.role === 'admin',
-              isLoading: false,
-            });
+            dataToSend = {
+              ...userData,
+              adminSecretCode: userData.adminSecretCode
+            };
+          } 
+          
+          const response = await ApiService.register(dataToSend);
+          
+          // Перевіряємо статус користувача в відповіді
+          if (response.user.status === 'pending') {
+            toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Якщо користувач активний, встановлюємо його дані
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isAdmin: response.user.role === 'admin',
+            isLoading: false,
+          });
+          
+          // Показуємо повідомлення про успіх
+          if (response.user.role === 'admin') {
             toast.success('Реєстрація адміністратора успішна!');
           } else {
-            const response = await ApiService.register(userData);
-            
-            // Перевіряємо, чи це реєстрація адміністратора без секретного коду
-            if (userData.role === 'admin') {
-              toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
-              set({ isLoading: false });
-              return;
-            }
-            
-            set({
-              user: response.user,
-              token: response.token,
-              isAuthenticated: true,
-              isAdmin: response.user.role === 'admin',
-              isLoading: false,
-            });
             toast.success('Реєстрація успішна!');
           }
         } catch (error) {

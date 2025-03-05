@@ -46,7 +46,16 @@ export default function AdminSetup() {
         adminSecretCode: secretCode
       });
       
-      navigate('/admin');
+      // Перевіряємо, чи успішно автентифіковані після реєстрації
+      const { isAuthenticated, isAdmin } = useAuthStore.getState();
+      
+      if (isAuthenticated && isAdmin) {
+        toast.success('Перший адміністратор успішно створений і активований!');
+        navigate('/admin');
+      } else {
+        // Якщо статус все ще "pending", показуємо повідомлення
+        setError('Адміністратор був створений, але потребує підтвердження. Перевірте, чи правильний секретний код.');
+      }
     } catch (error) {
       console.error('Admin setup error:', error);
       setError(error instanceof Error ? error.message : 'Виникла помилка під час налаштування адміністратора');
