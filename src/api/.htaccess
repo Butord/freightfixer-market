@@ -13,10 +13,14 @@ RewriteRule ^categories/([0-9]+)/?$ categories.php?id=$1 [NC,L]
 RewriteRule ^orders/?$ orders.php [NC,L]
 RewriteRule ^orders/([0-9]+)/?$ orders.php?id=$1 [NC,L]
 
-# Auth routes
+# Auth routes - ensure these routes are properly defined
 RewriteRule ^auth/login/?$ auth.php?action=login [NC,L]
 RewriteRule ^auth/register/?$ auth.php?action=register [NC,L]
 RewriteRule ^auth/me/?$ auth.php?action=me [NC,L]
+
+# User management routes
+RewriteRule ^users/?$ users.php [NC,L]
+RewriteRule ^users/([0-9]+)/?$ users.php?id=$1 [NC,L]
 
 # Set default headers for all responses
 <IfModule mod_headers.c>

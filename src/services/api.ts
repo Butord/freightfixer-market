@@ -1,8 +1,8 @@
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
-// Адреса API з урахуванням того, що API знаходиться в підкаталозі api
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api';
+// Base API URL with trailing slash removed to avoid double slashes
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api').replace(/\/$/, '');
 
 /**
  * Helper to handle API response errors
@@ -14,7 +14,10 @@ const handleApiResponse = async (response: Response) => {
     // If response is HTML or other non-JSON format, log it for debugging
     const text = await response.text();
     console.error('Non-JSON response received:', text.substring(0, 500)); // Log first 500 chars
-    throw new Error('Неочікувана відповідь від сервера. Перевірте консоль для деталей.');
+    
+    // Include the URL that failed in the error message
+    const url = response.url || 'unknown URL';
+    throw new Error(`Неочікувана відповідь від сервера при запиті до ${url}. Перевірте консоль для деталей.`);
   }
 
   const data = await response.json();
@@ -29,6 +32,7 @@ const handleApiResponse = async (response: Response) => {
 class ApiService {
   // Методи автентифікації
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log('Login request URL:', `${API_BASE_URL}/auth/login`);
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -42,17 +46,24 @@ class ApiService {
 
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
     console.log('Sending register request:', { ...userData, password: '[REDACTED]' });
-    console.log('API URL:', `${API_BASE_URL}/auth/register`);
+    const url = `${API_BASE_URL}/auth/register`;
+    console.log('API URL:', url);
     
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-    
-    return handleApiResponse(response);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      console.log('Register response status:', response.status);
+      return handleApiResponse(response);
+    } catch (error) {
+      console.error('Network error during registration:', error);
+      throw new Error(`Помилка мережі: ${error instanceof Error ? error.message : 'невідома помилка'}`);
+    }
   }
 
   static async getCurrentUser(token: string): Promise<User> {
