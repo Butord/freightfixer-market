@@ -14,7 +14,7 @@ interface AuthState {
   error: string | null;
   
   login: (credentials: LoginRequest) => Promise<{ success: boolean; message?: string }>;
-  register: (userData: RegisterRequest) => Promise<void>;
+  register: (userData: RegisterRequest) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await ApiService.login(credentials);
           
           // Перевіряємо, чи адміністратор активований
-          if (response.user.role === 'admin' && response.user.status === 'pending') {
+          if (response.user && response.user.role === 'admin' && response.user.status === 'pending') {
             set({ isLoading: false });
             toast.error('Ваш обліковий запис адміністратора очікує підтвердження');
             return { success: false, message: 'Ваш обліковий запис адміністратора очікує підтвердження' };
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>()(
             user: response.user,
             token: response.token,
             isAuthenticated: true,
-            isAdmin: response.user.role === 'admin',
+            isAdmin: response.user && response.user.role === 'admin',
             isLoading: false,
           });
           toast.success('Успішний вхід!');
@@ -80,11 +80,23 @@ export const useAuthStore = create<AuthState>()(
           
           const response = await ApiService.register(dataToSend);
           
-          // Перевіряємо статус користувача в відповіді
+          // Перевіряємо чи є відповідь від сервера
+          if (!response || !response.user) {
+            set({ isLoading: false });
+            return { 
+              success: false, 
+              message: 'Помилка отримання даних від сервера' 
+            };
+          }
+          
+          // Перевіряємо статус користувача в відповіді, якщо він є
           if (response.user.status === 'pending') {
             toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
             set({ isLoading: false });
-            return;
+            return { 
+              success: true, 
+              message: 'Запит на створення адміністратора надіслано. Очікуйте підтвердження.' 
+            };
           }
           
           // Якщо користувач активний, встановлюємо його дані
@@ -102,12 +114,16 @@ export const useAuthStore = create<AuthState>()(
           } else {
             toast.success('Реєстрація успішна!');
           }
+          
+          return { success: true };
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Невідома помилка реєстрації';
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Невідома помилка реєстрації',
+            error: errorMessage,
           });
-          toast.error(error instanceof Error ? error.message : 'Невідома помилка реєстрації');
+          toast.error(errorMessage);
+          return { success: false, message: errorMessage };
         }
       },
 

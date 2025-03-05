@@ -37,7 +37,7 @@ export default function AdminSetup() {
     
     try {
       console.log('Attempting to register admin with secret code');
-      await register({
+      const result = await register({
         name,
         email,
         password,
@@ -46,15 +46,20 @@ export default function AdminSetup() {
         adminSecretCode: secretCode
       });
       
-      // Перевіряємо, чи успішно автентифіковані після реєстрації
-      const { isAuthenticated, isAdmin } = useAuthStore.getState();
-      
-      if (isAuthenticated && isAdmin) {
-        toast.success('Перший адміністратор успішно створений і активований!');
-        navigate('/admin');
+      if (result.success) {
+        // Перевіряємо, чи успішно автентифіковані після реєстрації
+        const { isAuthenticated, isAdmin } = useAuthStore.getState();
+        
+        if (isAuthenticated && isAdmin) {
+          toast.success('Перший адміністратор успішно створений і активований!');
+          navigate('/admin');
+        } else {
+          // Якщо не автентифікований як адмін, показуємо повідомлення
+          toast.info('Адміністратор був створений, перевірте статус активації');
+          navigate('/login');
+        }
       } else {
-        // Якщо статус все ще "pending", показуємо повідомлення
-        setError('Адміністратор був створений, але потребує підтвердження. Перевірте, чи правильний секретний код.');
+        setError(result.message || 'Виникла помилка під час налаштування адміністратора');
       }
     } catch (error) {
       console.error('Admin setup error:', error);

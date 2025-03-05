@@ -1,3 +1,4 @@
+
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
@@ -59,6 +60,12 @@ class ApiService {
       });
       
       console.log('Register response status:', response.status);
+      
+      // Обробка помилки 404
+      if (response.status === 404) {
+        throw new Error(`API endpoint не знайдено: ${url}. Переконайтеся, що всі файли правильно розміщені на сервері.`);
+      }
+      
       return handleApiResponse(response);
     } catch (error) {
       console.error('Network error during registration:', error);
