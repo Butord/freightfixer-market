@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function RegisterForm() {
   const [name, setName] = useState('');
@@ -12,6 +13,7 @@ export default function RegisterForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const { register } = useAuthStore();
@@ -19,6 +21,13 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+    
+    if (password !== confirmPassword) {
+      setError('Паролі не співпадають');
+      setIsLoading(false);
+      return;
+    }
     
     try {
       await register({
@@ -31,7 +40,8 @@ export default function RegisterForm() {
       
       navigate('/');
     } catch (error) {
-      console.error(error);
+      console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : 'Виникла помилка під час реєстрації');
     } finally {
       setIsLoading(false);
     }
@@ -40,6 +50,12 @@ export default function RegisterForm() {
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+        
         <div>
           <Label htmlFor="name">Ім'я</Label>
           <Input 

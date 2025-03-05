@@ -14,26 +14,29 @@ export default function AdminSetup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [secretCode, setSecretCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const { register } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (password !== confirmPassword) {
-      toast.error('Паролі не співпадають');
+      setError('Паролі не співпадають');
       return;
     }
     
     if (!secretCode) {
-      toast.error('Секретний код обов\'язковий для реєстрації першого адміністратора');
+      setError('Секретний код обов\'язковий для реєстрації першого адміністратора');
       return;
     }
     
     setIsLoading(true);
     
     try {
+      console.log('Attempting to register admin with secret code');
       await register({
         name,
         email,
@@ -45,7 +48,8 @@ export default function AdminSetup() {
       
       navigate('/admin');
     } catch (error) {
-      console.error(error);
+      console.error('Admin setup error:', error);
+      setError(error instanceof Error ? error.message : 'Виникла помилка під час налаштування адміністратора');
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +61,12 @@ export default function AdminSetup() {
       
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+          
           <div>
             <Label htmlFor="name">Ім'я</Label>
             <Input 

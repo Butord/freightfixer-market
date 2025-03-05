@@ -4,6 +4,28 @@ import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } 
 // Адреса API з урахуванням базового шляху
 const API_URL = import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api';
 
+/**
+ * Helper to handle API response errors
+ */
+const handleApiResponse = async (response: Response) => {
+  // Check for non-JSON responses
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    // If response is HTML or other non-JSON format, log it for debugging
+    const text = await response.text();
+    console.error('Non-JSON response received:', text.substring(0, 500)); // Log first 500 chars
+    throw new Error('Неочікувана відповідь від сервера. Перевірте консоль для деталей.');
+  }
+
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.message || 'Помилка сервера');
+  }
+  
+  return data;
+};
+
 class ApiService {
   // Методи автентифікації
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -15,15 +37,12 @@ class ApiService {
       body: JSON.stringify(credentials),
     });
     
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Помилка авторизації');
-    }
-    
-    return response.json();
+    return handleApiResponse(response);
   }
 
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
+    console.log('Sending register request:', { ...userData, password: '[REDACTED]' });
+    
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
@@ -32,12 +51,7 @@ class ApiService {
       body: JSON.stringify(userData),
     });
     
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Помилка реєстрації');
-    }
-    
-    return response.json();
+    return handleApiResponse(response);
   }
 
   static async getCurrentUser(token: string): Promise<User> {
@@ -47,11 +61,7 @@ class ApiService {
       },
     });
     
-    if (!response.ok) {
-      throw new Error('Не вдалося отримати дані користувача');
-    }
-    
-    return response.json();
+    return handleApiResponse(response);
   }
 
   // Нові методи для керування користувачами

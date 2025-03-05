@@ -105,6 +105,7 @@ export default function AdminUsers() {
         role: 'admin'
       };
       
+      console.log('Attempting to create admin user');
       await ApiService.register(adminData);
       toast.success('Запит на створення адміністратора надіслано');
       
@@ -118,8 +119,8 @@ export default function AdminUsers() {
       // Refresh user list
       fetchUsers();
     } catch (error) {
-      toast.error('Помилка створення адміністратора');
-      console.error(error);
+      console.error('Admin creation error:', error);
+      toast.error(error instanceof Error ? error.message : 'Помилка створення адміністратора');
     } finally {
       setIsCreatingAdmin(false);
     }
