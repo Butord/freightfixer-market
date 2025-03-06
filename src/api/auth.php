@@ -1,4 +1,3 @@
-
 <?php
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -104,13 +103,23 @@ function handleRegister() {
         // Verify secret code for first admin
         $secretCodeValid = false;
         
-        // Hardcoded secret code for demonstration
-        $correctSecretCode = "Butord098#"; // Should match your VITE_ADMIN_SECRET_CODE
-
-        // Log comparison for debugging (not in production)
-        error_log("Secret code comparison - Received: $adminSecretCode, Expected: $correctSecretCode");
+        // Get admin secret code from environment variable or configuration file
+        $adminSecretCodeEnv = getenv('ADMIN_SECRET_CODE');
         
-        if ($isFirstAdmin && $adminSecretCode === $correctSecretCode) {
+        // If not found in environment, try to get from config.php if it exists
+        if (!$adminSecretCodeEnv) {
+            // Try to check if we have a config file
+            $configFile = __DIR__ . '/config.php';
+            if (file_exists($configFile)) {
+                include $configFile;
+                $adminSecretCodeEnv = isset($config['admin_secret_code']) ? $config['admin_secret_code'] : null;
+            }
+        }
+        
+        error_log("Checking admin secret code. Received code exists: " . (!empty($adminSecretCode) ? 'yes' : 'no'));
+        error_log("Admin secret code from environment exists: " . (!empty($adminSecretCodeEnv) ? 'yes' : 'no'));
+        
+        if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeEnv) && $adminSecretCode === $adminSecretCodeEnv) {
             $secretCodeValid = true;
             error_log("Secret code is valid for first admin");
         }

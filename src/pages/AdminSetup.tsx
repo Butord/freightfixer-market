@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -128,7 +129,8 @@ export default function AdminSetup() {
             />
             <p className="text-sm text-gray-500 mt-1">
               Введіть секретний код для налаштування першого адміністратора сайту.
-              Код повинен бути встановлений у змінній оточення VITE_ADMIN_SECRET_CODE.
+              Код повинен бути встановлений у змінній оточення ADMIN_SECRET_CODE на сервері
+              та VITE_ADMIN_SECRET_CODE у файлі .env для розробки.
             </p>
           </div>
           
