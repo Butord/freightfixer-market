@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
@@ -46,18 +45,11 @@ export default function AdminSetup() {
         adminSecretCode: secretCode
       });
       
+      console.log('Registration result:', result);
+      
       if (result.success) {
-        // Перевіряємо, чи успішно автентифіковані після реєстрації
-        const { isAuthenticated, isAdmin } = useAuthStore.getState();
-        
-        if (isAuthenticated && isAdmin) {
-          toast.success('Перший адміністратор успішно створений і активований!');
-          navigate('/admin');
-        } else {
-          // Якщо не автентифікований як адмін, показуємо повідомлення
-          toast.info('Адміністратор був створений, перевірте статус активації');
-          navigate('/login');
-        }
+        toast.success('Перший адміністратор успішно створений!');
+        navigate('/login');
       } else {
         setError(result.message || 'Виникла помилка під час налаштування адміністратора');
       }

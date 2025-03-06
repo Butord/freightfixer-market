@@ -64,8 +64,10 @@ export const useAuthStore = create<AuthState>()(
       register: async (userData) => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Registering user with role:', userData.role);
+          
           // Перевіряємо, чи це реєстрація адміністратора з використанням спеціального коду
-          const isFirstAdminSetup = userData.role === 'admin' && userData.adminSecretCode === import.meta.env.VITE_ADMIN_SECRET_CODE;
+          const isFirstAdminSetup = userData.role === 'admin' && userData.adminSecretCode;
           
           // Відправляємо секретний код на сервер для першого адміністратора
           let dataToSend = userData;
@@ -76,16 +78,38 @@ export const useAuthStore = create<AuthState>()(
               ...userData,
               adminSecretCode: userData.adminSecretCode
             };
+            console.log('Sending admin registration with secret code');
           } 
           
           const response = await ApiService.register(dataToSend);
+          console.log('Registration response:', response);
           
           // Перевіряємо чи є відповідь від сервера
-          if (!response || !response.user) {
+          if (!response) {
             set({ isLoading: false });
+            console.error('Empty response from server');
             return { 
               success: false, 
               message: 'Помилка отримання даних від сервера' 
+            };
+          }
+          
+          // Якщо відповідь успішна, але без даних користувача
+          if (response.success === false) {
+            set({ isLoading: false });
+            return { 
+              success: false, 
+              message: response.message || 'Помилка реєстрації' 
+            };
+          }
+          
+          // Перевіряємо наявність користувача в відповіді
+          if (!response.user) {
+            set({ isLoading: false });
+            console.error('Response missing user data:', response);
+            return { 
+              success: false, 
+              message: 'Відповідь сервера не містить даних користувача' 
             };
           }
           
@@ -118,11 +142,11 @@ export const useAuthStore = create<AuthState>()(
           return { success: true };
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Невідома помилка реєстрації';
+          console.error('Registration error:', errorMessage);
           set({
             isLoading: false,
             error: errorMessage,
           });
-          toast.error(errorMessage);
           return { success: false, message: errorMessage };
         }
       },

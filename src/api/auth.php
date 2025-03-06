@@ -43,13 +43,21 @@ function handleRegister() {
     }
     
     // Get JSON data from request body
-    $data = json_decode(file_get_contents('php://input'), true);
+    $raw_data = file_get_contents('php://input');
+    $data = json_decode($raw_data, true);
     
     if (!$data) {
+        error_log("Invalid JSON received: " . $raw_data);
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
         return;
     }
+    
+    // Log received data for debugging (removing sensitive info)
+    $log_data = $data;
+    if (isset($log_data['password'])) $log_data['password'] = '[REDACTED]';
+    if (isset($log_data['password_confirm'])) $log_data['password_confirm'] = '[REDACTED]';
+    error_log("Register data received: " . json_encode($log_data));
     
     // Validate required fields
     $requiredFields = ['name', 'email', 'password', 'password_confirm'];
@@ -91,23 +99,29 @@ function handleRegister() {
         // Check if any admin exists
         $adminCheck = $conn->query("SELECT id FROM users WHERE role = 'admin' AND status = 'active'");
         $isFirstAdmin = ($adminCheck->num_rows == 0);
+        error_log("Admin check - isFirstAdmin: " . ($isFirstAdmin ? 'true' : 'false'));
         
-        // Verify secret code for first admin (should be set in your environment)
+        // Verify secret code for first admin
         $secretCodeValid = false;
         
-        // In a real application, you would store this in a secure environment variable
-        // For this example, we're using a hardcoded value - CHANGE THIS in production!
-        $correctSecretCode = "Butord098#"; // This should match your VITE_ADMIN_SECRET_CODE
+        // Hardcoded secret code for demonstration
+        $correctSecretCode = "Butord098#"; // Should match your VITE_ADMIN_SECRET_CODE
+
+        // Log comparison for debugging (not in production)
+        error_log("Secret code comparison - Received: $adminSecretCode, Expected: $correctSecretCode");
         
         if ($isFirstAdmin && $adminSecretCode === $correctSecretCode) {
             $secretCodeValid = true;
+            error_log("Secret code is valid for first admin");
         }
         
         // Set status based on admin validation
         if ($isFirstAdmin && $secretCodeValid) {
             $status = 'active'; // First admin with valid secret code is auto-activated
+            error_log("First admin will be set to active status");
         } else {
             $status = 'pending'; // Regular admin registration needs approval
+            error_log("Admin will be set to pending status");
         }
     } else {
         // Regular users are active by default
@@ -118,37 +132,44 @@ function handleRegister() {
     $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
     
     // Insert the new user
-    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $data['name'], $data['email'], $hashedPassword, $role, $status);
-    
-    if ($stmt->execute()) {
-        $userId = $stmt->insert_id;
+    try {
+        $stmt = $conn->prepare("INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $data['name'], $data['email'], $hashedPassword, $role, $status);
         
-        // Generate a simple token (in a real app, use a proper JWT library)
-        $token = bin2hex(random_bytes(32));
-        
-        // Get the newly created user
-        $stmt = $conn->prepare("SELECT id, name, email, role, status, created_at FROM users WHERE id = ?");
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $user = $stmt->get_result()->fetch_assoc();
-        
-        $message = $isFirstAdmin && $status === 'active' 
-            ? 'First admin created successfully' 
-            : ($role === 'admin' && $status === 'pending' 
-                ? 'Admin registration pending approval' 
-                : 'User registered successfully');
-        
-        http_response_code(201);
-        echo json_encode([
-            'success' => true,
-            'message' => $message,
-            'user' => $user,
-            'token' => $token
-        ]);
-    } else {
+        if ($stmt->execute()) {
+            $userId = $stmt->insert_id;
+            
+            // Generate a simple token (in a real app, use a proper JWT library)
+            $token = bin2hex(random_bytes(32));
+            
+            // Get the newly created user
+            $stmt = $conn->prepare("SELECT id, name, email, role, status, created_at FROM users WHERE id = ?");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            
+            $message = $isFirstAdmin && $status === 'active' 
+                ? 'First admin created successfully' 
+                : ($role === 'admin' && $status === 'pending' 
+                    ? 'Admin registration pending approval' 
+                    : 'User registered successfully');
+            
+            http_response_code(201);
+            echo json_encode([
+                'success' => true,
+                'message' => $message,
+                'user' => $user,
+                'token' => $token
+            ]);
+        } else {
+            error_log("Failed to execute user insert: " . $stmt->error);
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to register user: ' . $conn->error]);
+        }
+    } catch (Exception $e) {
+        error_log("Exception during user registration: " . $e->getMessage());
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Failed to register user: ' . $conn->error]);
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
     }
 }
 

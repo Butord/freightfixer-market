@@ -10,6 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit;
 }
 
+// Enable error logging
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_log("DB Connection attempt started");
+
 $host = 'localhost';
 $db   = 'your_database';
 $user = 'your_username';
@@ -24,11 +29,14 @@ if (!file_exists($uploadDir)) {
 // For mysqli connection
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
+    error_log("DB Connection failed: " . $conn->connect_error);
     die(json_encode([
         'success' => false,
         'message' => 'Database connection failed: ' . $conn->connect_error
     ]));
 }
+
+error_log("DB Connection successful");
 
 // Set character set
 $conn->set_charset($charset);
@@ -46,5 +54,6 @@ try {
     
 } catch (\PDOException $e) {
     // Only report PDO errors if requested
+    error_log("PDO Connection error: " . $e->getMessage());
     // We don't exit here as we're using mysqli as the primary connection
 }

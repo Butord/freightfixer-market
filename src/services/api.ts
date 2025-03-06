@@ -9,6 +9,11 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://autoss-best.com/a
  * Helper to handle API response errors
  */
 const handleApiResponse = async (response: Response) => {
+  if (!response) {
+    console.error('Empty response received');
+    throw new Error('Не вдалося отримати відповідь від сервера');
+  }
+
   // Check for non-JSON responses
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
@@ -24,6 +29,7 @@ const handleApiResponse = async (response: Response) => {
   const data = await response.json();
   
   if (!response.ok) {
+    console.error('API error response:', data);
     throw new Error(data.message || 'Помилка сервера');
   }
   
@@ -63,7 +69,15 @@ class ApiService {
       
       // Обробка помилки 404
       if (response.status === 404) {
+        console.error('API endpoint not found:', url);
         throw new Error(`API endpoint не знайдено: ${url}. Переконайтеся, що всі файли правильно розміщені на сервері.`);
+      }
+      
+      // Обробка неуспішних відповідей
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Server error response:', errorData);
+        throw new Error(errorData?.message || `Помилка сервера: ${response.status} ${response.statusText}`);
       }
       
       return handleApiResponse(response);
