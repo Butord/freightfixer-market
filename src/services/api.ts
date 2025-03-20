@@ -25,7 +25,7 @@ const handleApiResponse = async (response: Response) => {
       // If response is not JSON, get as text
       try {
         const text = await response.text();
-        console.error('Non-JSON error response:', text.substring(0, 500)); // Log first 500 chars
+        console.error('Non-JSON error response:', text ? text.substring(0, 500) : '(empty response)'); // Log first 500 chars
       } catch (textError) {
         console.error('Could not read response body');
       }
@@ -36,19 +36,37 @@ const handleApiResponse = async (response: Response) => {
     }
   }
 
+  // Check for empty responses
+  const contentLength = response.headers.get('content-length');
+  if (contentLength === '0') {
+    console.error('Empty response body received');
+    return { success: false, message: 'Сервер повернув порожню відповідь' };
+  }
+
   // Check for non-JSON responses for successful responses
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
     // If response is HTML or other non-JSON format, log it for debugging
-    const text = await response.text();
-    console.error('Non-JSON response received:', text.substring(0, 500)); // Log first 500 chars
-    
-    // Include the URL that failed in the error message
-    const url = response.url || 'unknown URL';
-    throw new Error(`Неочікувана відповідь від сервера при запиті до ${url}. Перевірте консоль для деталей.`);
+    try {
+      const text = await response.text();
+      console.error('Non-JSON response received:', text ? text.substring(0, 500) : '(empty response)'); // Log first 500 chars
+      
+      // Include the URL that failed in the error message
+      const url = response.url || 'unknown URL';
+      throw new Error(`Неочікувана відповідь від сервера при запиті до ${url}. Перевірте консоль для деталей.`);
+    } catch (textError) {
+      console.error('Could not read response body');
+      throw new Error('Не вдалося прочитати відповідь сервера');
+    }
   }
 
-  return await response.json();
+  // Parse JSON response
+  try {
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to parse JSON response:', error);
+    throw new Error('Не вдалося розпарсити відповідь сервера');
+  }
 };
 
 class ApiService {
@@ -61,6 +79,7 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
+      credentials: 'include' // Include cookies with the request
     });
     
     return handleApiResponse(response);
@@ -78,7 +97,7 @@ class ApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
-        credentials: 'include' // Додаємо це для передачі куків, якщо вони знадобляться
+        credentials: 'include' // Include cookies with the request
       });
       
       console.log('Register response status:', response.status);

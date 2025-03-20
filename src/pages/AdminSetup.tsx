@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function AdminSetup() {
   const [name, setName] = useState('');
@@ -21,6 +22,7 @@ export default function AdminSetup() {
   
   // Отримуємо код з env (для відображення підказки, не для автозаповнення)
   const adminSecretCodeEnv = import.meta.env.VITE_ADMIN_SECRET_CODE || '';
+  
   useEffect(() => {
     console.log('Admin setup component loaded, secret code config available:', 
       adminSecretCodeEnv ? 'yes' : 'no');
@@ -74,6 +76,14 @@ export default function AdminSetup() {
       <h1 className="text-2xl font-bold text-center mb-6">Налаштування першого адміністратора</h1>
       
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+        <Alert className="mb-6 bg-blue-50">
+          <AlertTitle>Важлива інформація</AlertTitle>
+          <AlertDescription>
+            Для налаштування першого адміністратора потрібен секретний код, який має бути встановлений 
+            у змінній оточення <code>ADMIN_SECRET_CODE</code> на сервері.
+          </AlertDescription>
+        </Alert>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
@@ -136,8 +146,7 @@ export default function AdminSetup() {
             />
             <p className="text-sm text-gray-500 mt-1">
               Введіть секретний код для налаштування першого адміністратора сайту.
-              Код має бути встановлений у змінній оточення ADMIN_SECRET_CODE на сервері
-              або у файлі конфігурації. За замовчуванням: {adminSecretCodeEnv ? 'встановлений' : 'не встановлений'}
+              Код має бути встановлений у змінній оточення ADMIN_SECRET_CODE на сервері.
             </p>
           </div>
           

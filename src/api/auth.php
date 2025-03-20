@@ -1,7 +1,15 @@
 <?php
 header('Content-Type: application/json');
+
+// Enable detailed error logging for debugging
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_log("Auth request received: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
+
 require_once 'db_config.php';
-require_once 'config.php'; // Переконуємося, що файл конфігурації включено
+// Load the config with admin_secret_code
+$config = require_once 'config.php';
+error_log("Config loaded, secret code available: " . (isset($config['admin_secret_code']) ? "yes" : "no"));
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -13,10 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Get the action from the URL
 $action = isset($_GET['action']) ? $_GET['action'] : '';
-
-// Enable detailed error logging for debugging
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
 error_log("Auth action: $action");
 
 // Handle different authentication actions
@@ -111,19 +115,13 @@ function handleRegister() {
         // Verify secret code for first admin
         $secretCodeValid = false;
         
-        // Отримання секретного коду із змінної оточення або з файлу конфігурації
-        $adminSecretCodeConfig = getenv('ADMIN_SECRET_CODE');
-        
-        // Якщо немає з оточення, беремо з config.php
-        if (empty($adminSecretCodeConfig) && isset($config) && isset($config['admin_secret_code'])) {
-            $adminSecretCodeConfig = $config['admin_secret_code'];
-        }
-        
-        error_log("Admin secret from config: " . (empty($adminSecretCodeConfig) ? 'not found' : 'found'));
-        error_log("Checking admin secret code. Received code length: " . strlen($adminSecretCode));
+        // Get admin secret code from config
+        $adminSecretCodeConfig = $config['admin_secret_code'] ?? '';
+        error_log("Admin secret from config: " . (!empty($adminSecretCodeConfig) ? 'found (length: ' . strlen($adminSecretCodeConfig) . ')' : 'not found'));
         
         if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeConfig)) {
             // Compare the received code with the configured code
+            error_log("Comparing codes - received: '" . substr($adminSecretCode, 0, 3) . "***' vs config: '" . substr($adminSecretCodeConfig, 0, 3) . "***'");
             $secretCodeValid = ($adminSecretCode === $adminSecretCodeConfig);
             error_log("Secret code validation result: " . ($secretCodeValid ? 'valid' : 'invalid'));
         }
