@@ -15,6 +15,7 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
+// Database configuration
 $host = 'localhost';
 $db   = 'your_database';
 $user = 'your_username';
@@ -22,38 +23,45 @@ $pass = 'your_password';
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
 
+// Make sure upload directory exists
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
-// For mysqli connection
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    error_log("DB Connection failed: " . $conn->connect_error);
+// Test if we can connect to the database
+try {
+    // For mysqli connection
+    $conn = new mysqli($host, $user, $pass, $db);
+    if ($conn->connect_error) {
+        error_log("DB Connection failed: " . $conn->connect_error);
+        // Don't exit here - let the script continue and handle the error gracefully
+    } else {
+        error_log("DB Connection successful");
+        // Set character set
+        $conn->set_charset($charset);
+    }
+    
+    // For PDO connection if needed later
+    try {
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+        
+        $pdo = new PDO($dsn, $user, $pass, $options);
+        error_log("PDO connection successful");
+        
+    } catch (\PDOException $e) {
+        // Only report PDO errors if requested
+        error_log("PDO Connection error: " . $e->getMessage());
+        // We don't exit here as we're using mysqli as the primary connection
+    }
+} catch (Exception $e) {
+    error_log("General exception during DB connection: " . $e->getMessage());
     die(json_encode([
         'success' => false,
-        'message' => 'Database connection failed: ' . $conn->connect_error
+        'message' => 'Database connection failed: ' . $e->getMessage()
     ]));
-}
-
-error_log("DB Connection successful");
-
-// Set character set
-$conn->set_charset($charset);
-
-// For PDO connection if needed later
-try {
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-    
-    $pdo = new PDO($dsn, $user, $pass, $options);
-    
-} catch (\PDOException $e) {
-    // Only report PDO errors if requested
-    error_log("PDO Connection error: " . $e->getMessage());
-    // We don't exit here as we're using mysqli as the primary connection
 }

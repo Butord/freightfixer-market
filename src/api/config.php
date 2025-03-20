@@ -10,14 +10,14 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_log("Loading config.php file");
 
-// Спочатку спробуємо отримати значення з змінної оточення
+// Try to get admin secret code from environment variable first
 $adminSecretCode = getenv('ADMIN_SECRET_CODE');
-error_log("Admin secret code from env: " . ($adminSecretCode ? "found" : "not found"));
+error_log("Admin secret code from env: " . ($adminSecretCode ? "found (length: " . strlen($adminSecretCode) . ")" : "not found"));
 
-// Якщо значення з оточення порожнє, використовуємо стандартне значення
+// Hardcoded fallback value (this is just for development, in production use environment variables)
 if (empty($adminSecretCode)) {
     $adminSecretCode = 'Butord098#';
-    error_log("Using default admin secret code");
+    error_log("Using default admin secret code: " . substr($adminSecretCode, 0, 3) . "*** (length: " . strlen($adminSecretCode) . ")");
 }
 
 // Create the configuration array
@@ -34,5 +34,5 @@ $visibleLength = min(3, $secretLength);
 $maskedSecret = substr($adminSecretCode, 0, $visibleLength) . str_repeat('*', $secretLength - $visibleLength);
 error_log("Admin secret code configured: $maskedSecret (length: $secretLength)");
 
-// Make sure to return nothing if this file is included directly
+// Make sure to return config array
 return $config;

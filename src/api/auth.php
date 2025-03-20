@@ -1,3 +1,4 @@
+
 <?php
 header('Content-Type: application/json');
 
@@ -10,6 +11,9 @@ require_once 'db_config.php';
 // Load the config with admin_secret_code
 $config = require_once 'config.php';
 error_log("Config loaded, secret code available: " . (isset($config['admin_secret_code']) ? "yes" : "no"));
+if (isset($config['admin_secret_code'])) {
+    error_log("Admin secret code from config.php: " . substr($config['admin_secret_code'], 0, 3) . "*** (length: " . strlen($config['admin_secret_code']) . ")");
+}
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -44,110 +48,143 @@ switch ($action) {
 function handleRegister() {
     global $conn, $config;
     
-    // Only accept POST requests
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-        return;
-    }
-    
-    // Get JSON data from request body
-    $raw_data = file_get_contents('php://input');
-    error_log("Raw data received: " . $raw_data);
-    $data = json_decode($raw_data, true);
-    
-    if (!$data) {
-        error_log("Invalid JSON received: " . $raw_data);
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
-        return;
-    }
-    
-    // Log received data for debugging (removing sensitive info)
-    $log_data = $data;
-    if (isset($log_data['password'])) $log_data['password'] = '[REDACTED]';
-    if (isset($log_data['password_confirm'])) $log_data['password_confirm'] = '[REDACTED]';
-    if (isset($log_data['adminSecretCode'])) $log_data['adminSecretCode'] = '[SECRET REDACTED]';
-    error_log("Register data received: " . json_encode($log_data));
-    
-    // Validate required fields
-    $requiredFields = ['name', 'email', 'password', 'password_confirm'];
-    foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || empty($data[$field])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => "Missing required field: $field"]);
+    try {
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             return;
         }
-    }
-    
-    // Check if passwords match
-    if ($data['password'] !== $data['password_confirm']) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Passwords do not match']);
-        return;
-    }
-    
-    // Check if email already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $data['email']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Email already in use']);
-        return;
-    }
-    
-    // Set default role to 'user' if not specified
-    $role = isset($data['role']) && $data['role'] === 'admin' ? 'admin' : 'user';
-    
-    // Check if admin exists - if no admins exist and this is an admin registration with secretCode, auto-approve
-    $adminSecretCode = isset($data['adminSecretCode']) ? $data['adminSecretCode'] : '';
-    $isFirstAdmin = false;
-    
-    if ($role === 'admin') {
-        // Check if any admin exists
-        $adminCheck = $conn->query("SELECT id FROM users WHERE role = 'admin' AND status = 'active'");
-        $isFirstAdmin = ($adminCheck->num_rows == 0);
-        error_log("Admin check - isFirstAdmin: " . ($isFirstAdmin ? 'true' : 'false'));
         
-        // Verify secret code for first admin
-        $secretCodeValid = false;
+        // Get JSON data from request body
+        $raw_data = file_get_contents('php://input');
+        error_log("Raw data received: " . $raw_data);
+        $data = json_decode($raw_data, true);
         
-        // Get admin secret code from config
-        $adminSecretCodeConfig = $config['admin_secret_code'] ?? '';
-        error_log("Admin secret from config: " . (!empty($adminSecretCodeConfig) ? 'found (length: ' . strlen($adminSecretCodeConfig) . ')' : 'not found'));
-        
-        if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeConfig)) {
-            // Compare the received code with the configured code
-            error_log("Comparing codes - received: '" . substr($adminSecretCode, 0, 3) . "***' vs config: '" . substr($adminSecretCodeConfig, 0, 3) . "***'");
-            $secretCodeValid = ($adminSecretCode === $adminSecretCodeConfig);
-            error_log("Secret code validation result: " . ($secretCodeValid ? 'valid' : 'invalid'));
+        if (!$data) {
+            error_log("Invalid JSON received: " . $raw_data);
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+            return;
         }
         
-        // Set status based on admin validation
-        if ($isFirstAdmin && $secretCodeValid) {
-            $status = 'active'; // First admin with valid secret code is auto-activated
-            error_log("First admin will be set to active status");
+        // Log received data for debugging (removing sensitive info)
+        $log_data = $data;
+        if (isset($log_data['password'])) $log_data['password'] = '[REDACTED]';
+        if (isset($log_data['password_confirm'])) $log_data['password_confirm'] = '[REDACTED]';
+        if (isset($log_data['adminSecretCode'])) $log_data['adminSecretCode'] = '[SECRET REDACTED]';
+        error_log("Register data received: " . json_encode($log_data));
+        
+        // Validate required fields
+        $requiredFields = ['name', 'email', 'password', 'password_confirm'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => "Missing required field: $field"]);
+                return;
+            }
+        }
+        
+        // Check if passwords match
+        if ($data['password'] !== $data['password_confirm']) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Passwords do not match']);
+            return;
+        }
+        
+        // Database connection validation
+        if (!$conn) {
+            error_log("Database connection is null");
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+            return;
+        }
+        
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $data['email']);
+        if (!$stmt->execute()) {
+            error_log("Failed to execute email check query: " . $stmt->error);
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+            return;
+        }
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Email already in use']);
+            return;
+        }
+        
+        // Set default role to 'user' if not specified
+        $role = isset($data['role']) && $data['role'] === 'admin' ? 'admin' : 'user';
+        
+        // Check if admin exists - if no admins exist and this is an admin registration with secretCode, auto-approve
+        $adminSecretCode = isset($data['adminSecretCode']) ? $data['adminSecretCode'] : '';
+        $isFirstAdmin = false;
+        
+        if ($role === 'admin') {
+            // Check if any admin exists
+            $adminCheck = $conn->query("SELECT id FROM users WHERE role = 'admin' AND status = 'active'");
+            if (!$adminCheck) {
+                error_log("Failed to execute admin check query: " . $conn->error);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+                return;
+            }
+            $isFirstAdmin = ($adminCheck->num_rows == 0);
+            error_log("Admin check - isFirstAdmin: " . ($isFirstAdmin ? 'true' : 'false'));
+            
+            // Verify secret code for first admin
+            $secretCodeValid = false;
+            
+            // Get admin secret code from config
+            $adminSecretCodeConfig = $config['admin_secret_code'] ?? '';
+            error_log("Admin secret from config: " . (!empty($adminSecretCodeConfig) ? 'found (length: ' . strlen($adminSecretCodeConfig) . ')' : 'not found'));
+            
+            if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeConfig)) {
+                // Compare the received code with the configured code
+                error_log("Comparing codes - received: '" . substr($adminSecretCode, 0, 3) . "***' (length: " . strlen($adminSecretCode) . ") vs config: '" . substr($adminSecretCodeConfig, 0, 3) . "***' (length: " . strlen($adminSecretCodeConfig) . ")");
+                $secretCodeValid = ($adminSecretCode === $adminSecretCodeConfig);
+                error_log("Secret code validation result: " . ($secretCodeValid ? 'valid' : 'invalid'));
+            }
+            
+            // Set status based on admin validation
+            if ($isFirstAdmin && $secretCodeValid) {
+                $status = 'active'; // First admin with valid secret code is auto-activated
+                error_log("First admin will be set to active status");
+            } else {
+                $status = 'pending'; // Regular admin registration needs approval
+                error_log("Admin will be set to pending status");
+            }
         } else {
-            $status = 'pending'; // Regular admin registration needs approval
-            error_log("Admin will be set to pending status");
+            // Regular users are active by default
+            $status = 'active';
         }
-    } else {
-        // Regular users are active by default
-        $status = 'active';
-    }
-    
-    // Hash the password
-    $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
-    
-    // Insert the new user
-    try {
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $data['name'], $data['email'], $hashedPassword, $role, $status);
         
-        if ($stmt->execute()) {
+        // Hash the password
+        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+        // Insert the new user
+        try {
+            $stmt = $conn->prepare("INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");
+            if (!$stmt) {
+                error_log("Failed to prepare insert statement: " . $conn->error);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+                return;
+            }
+            
+            $stmt->bind_param("sssss", $data['name'], $data['email'], $hashedPassword, $role, $status);
+            
+            if (!$stmt->execute()) {
+                error_log("Failed to execute user insert: " . $stmt->error);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to register user: ' . $stmt->error]);
+                return;
+            }
+            
             $userId = $stmt->insert_id;
             
             // Generate a simple token (in a real app, use a proper JWT library)
@@ -155,9 +192,31 @@ function handleRegister() {
             
             // Get the newly created user
             $stmt = $conn->prepare("SELECT id, name, email, role, status, created_at FROM users WHERE id = ?");
+            if (!$stmt) {
+                error_log("Failed to prepare user select statement: " . $conn->error);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+                return;
+            }
+            
             $stmt->bind_param("i", $userId);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
+            
+            if (!$stmt->execute()) {
+                error_log("Failed to execute user select: " . $stmt->error);
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to retrieve user: ' . $stmt->error]);
+                return;
+            }
+            
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+            
+            if (!$user) {
+                error_log("No user found after insert");
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'User was created but could not be retrieved']);
+                return;
+            }
             
             $message = $isFirstAdmin && $status === 'active' 
                 ? 'First admin created successfully' 
@@ -172,15 +231,16 @@ function handleRegister() {
                 'user' => $user,
                 'token' => $token
             ]);
-        } else {
-            error_log("Failed to execute user insert: " . $stmt->error);
+        } catch (Exception $e) {
+            error_log("Exception during user registration: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Failed to register user: ' . $conn->error]);
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            return;
         }
     } catch (Exception $e) {
-        error_log("Exception during user registration: " . $e->getMessage());
+        error_log("Global exception during registration: " . $e->getMessage());
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
     }
 }
 

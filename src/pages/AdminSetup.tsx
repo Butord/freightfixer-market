@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Info } from 'lucide-react';
 
 export default function AdminSetup() {
   const [name, setName] = useState('');
@@ -20,12 +21,20 @@ export default function AdminSetup() {
   const navigate = useNavigate();
   const { register } = useAuthStore();
   
-  // Отримуємо код з env (для відображення підказки, не для автозаповнення)
+  // Get the secret code from env (for display hint, not for auto-filling)
   const adminSecretCodeEnv = import.meta.env.VITE_ADMIN_SECRET_CODE || '';
   
   useEffect(() => {
     console.log('Admin setup component loaded, secret code config available:', 
       adminSecretCodeEnv ? 'yes' : 'no');
+    
+    // If there's a code in the env var, log its first few characters for debugging
+    if (adminSecretCodeEnv) {
+      const visibleLength = Math.min(3, adminSecretCodeEnv.length);
+      const maskedCode = adminSecretCodeEnv.substring(0, visibleLength) + 
+        '*'.repeat(adminSecretCodeEnv.length - visibleLength);
+      console.log('Admin code hint:', maskedCode, '(length:', adminSecretCodeEnv.length, ')');
+    }
   }, [adminSecretCodeEnv]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,10 +71,13 @@ export default function AdminSetup() {
         navigate('/login');
       } else {
         setError(result.message || 'Виникла помилка під час налаштування адміністратора');
+        toast.error(result.message || 'Виникла помилка під час налаштування адміністратора');
       }
     } catch (error) {
       console.error('Admin setup error:', error);
-      setError(error instanceof Error ? error.message : 'Виникла помилка під час налаштування адміністратора');
+      const errorMsg = error instanceof Error ? error.message : 'Виникла помилка під час налаштування адміністратора';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +89,7 @@ export default function AdminSetup() {
       
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
         <Alert className="mb-6 bg-blue-50">
+          <Info className="h-4 w-4" />
           <AlertTitle>Важлива інформація</AlertTitle>
           <AlertDescription>
             Для налаштування першого адміністратора потрібен секретний код, який має бути встановлений 
@@ -86,9 +99,11 @@ export default function AdminSetup() {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Помилка</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
           
           <div>
