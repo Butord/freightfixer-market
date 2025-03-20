@@ -1,4 +1,3 @@
-
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
@@ -14,7 +13,30 @@ const handleApiResponse = async (response: Response) => {
     throw new Error('Не вдалося отримати відповідь від сервера');
   }
 
-  // Check for non-JSON responses
+  // Check if response is ok before trying to parse JSON
+  if (!response.ok) {
+    // Try to parse JSON error response first
+    try {
+      const errorData = await response.json();
+      console.error('Server error response:', errorData);
+      throw new Error(errorData.message || `Помилка сервера: ${response.status} ${response.statusText}`);
+    } catch (jsonError) {
+      // If response is not JSON, get as text
+      try {
+        const text = await response.text();
+        console.error('Non-JSON error response:', text.substring(0, 500)); // Log first 500 chars
+      } catch (textError) {
+        // If can't get text, just use status
+        console.error('Could not read response body');
+      }
+      
+      // Include the URL that failed in the error message
+      const url = response.url || 'unknown URL';
+      throw new Error(`Помилка сервера: ${response.status} ${response.statusText} при запиті до ${url}`);
+    }
+  }
+
+  // Check for non-JSON responses for successful responses
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
     // If response is HTML or other non-JSON format, log it for debugging
@@ -26,21 +48,14 @@ const handleApiResponse = async (response: Response) => {
     throw new Error(`Неочікувана відповідь від сервера при запиті до ${url}. Перевірте консоль для деталей.`);
   }
 
-  const data = await response.json();
-  
-  if (!response.ok) {
-    console.error('API error response:', data);
-    throw new Error(data.message || 'Помилка сервера');
-  }
-  
-  return data;
+  return await response.json();
 };
 
 class ApiService {
-  // Методи автентифікації
+  // Authentication methods
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('Login request URL:', `${API_BASE_URL}/auth/login`);
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    console.log('Login request URL:', `${API_BASE_URL}/auth.php?action=login`);
+    const response = await fetch(`${API_BASE_URL}/auth.php?action=login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +68,7 @@ class ApiService {
 
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
     console.log('Sending register request:', { ...userData, password: '[REDACTED]' });
-    const url = `${API_BASE_URL}/auth/register`;
+    const url = `${API_BASE_URL}/auth.php?action=register`;
     console.log('API URL:', url);
     
     try {
@@ -66,20 +81,6 @@ class ApiService {
       });
       
       console.log('Register response status:', response.status);
-      
-      // Обробка помилки 404
-      if (response.status === 404) {
-        console.error('API endpoint not found:', url);
-        throw new Error(`API endpoint не знайдено: ${url}. Переконайтеся, що всі файли правильно розміщені на сервері.`);
-      }
-      
-      // Обробка неуспішних відповідей
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Server error response:', errorData);
-        throw new Error(errorData?.message || `Помилка сервера: ${response.status} ${response.statusText}`);
-      }
-      
       return handleApiResponse(response);
     } catch (error) {
       console.error('Network error during registration:', error);
@@ -97,7 +98,7 @@ class ApiService {
     return handleApiResponse(response);
   }
 
-  // Нові методи для керування користувачами
+  // New methods for managing users
   static async getUsers(token: string): Promise<User[]> {
     const response = await fetch(`${API_BASE_URL}/users`, {
       headers: {
@@ -142,7 +143,7 @@ class ApiService {
     }
   }
 
-  // Товари
+  // Products
   static async getProducts(): Promise<Product[]> {
     const response = await fetch(`${API_BASE_URL}/products`);
     if (!response.ok) throw new Error('Failed to fetch products');
@@ -180,7 +181,7 @@ class ApiService {
     if (!response.ok) throw new Error('Failed to delete product');
   }
 
-  // Категорії
+  // Categories
   static async getCategories(): Promise<Category[]> {
     const response = await fetch(`${API_BASE_URL}/categories`);
     if (!response.ok) throw new Error('Failed to fetch categories');
@@ -221,7 +222,7 @@ class ApiService {
     }
   }
 
-  // Замовлення
+  // Orders
   static async getOrders(): Promise<Order[]> {
     const response = await fetch(`${API_BASE_URL}/orders`);
     if (!response.ok) throw new Error('Failed to fetch orders');

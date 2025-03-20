@@ -1,3 +1,4 @@
+
 <?php
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -103,21 +104,25 @@ function handleRegister() {
         // Verify secret code for first admin
         $secretCodeValid = false;
         
-        // Get admin secret code from environment variable or configuration file
-        $adminSecretCodeEnv = getenv('ADMIN_SECRET_CODE');
+        // Load config once
+        $configFile = __DIR__ . '/config.php';
+        $adminSecretCodeEnv = null;
         
-        // If not found in environment, try to get from config.php if it exists
-        if (!$adminSecretCodeEnv) {
-            // Try to check if we have a config file
-            $configFile = __DIR__ . '/config.php';
-            if (file_exists($configFile)) {
-                include $configFile;
-                $adminSecretCodeEnv = isset($config['admin_secret_code']) ? $config['admin_secret_code'] : null;
+        // Try to get from environment first
+        $adminSecretCodeEnv = getenv('ADMIN_SECRET_CODE');
+        error_log("Admin secret code from env: " . ($adminSecretCodeEnv ? 'found' : 'not found'));
+        
+        // If not in environment, try config file
+        if (empty($adminSecretCodeEnv) && file_exists($configFile)) {
+            // Include the config file only if it exists and we need it
+            require_once $configFile;
+            if (isset($config) && isset($config['admin_secret_code'])) {
+                $adminSecretCodeEnv = $config['admin_secret_code'];
+                error_log("Admin secret code from config: " . ($adminSecretCodeEnv ? 'found' : 'not found'));
             }
         }
         
-        error_log("Checking admin secret code. Received code exists: " . (!empty($adminSecretCode) ? 'yes' : 'no'));
-        error_log("Admin secret code from environment exists: " . (!empty($adminSecretCodeEnv) ? 'yes' : 'no'));
+        error_log("Checking admin secret code. Received code: " . substr($adminSecretCode, 0, 3) . "...");
         
         if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeEnv) && $adminSecretCode === $adminSecretCodeEnv) {
             $secretCodeValid = true;
