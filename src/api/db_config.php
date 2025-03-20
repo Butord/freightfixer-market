@@ -11,25 +11,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // Enable error logging
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);  // Увімкнено для показу помилок (змініть на 0 в продакшн)
 ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
 // Database configuration
 $host = 'localhost';
-$db   = 'your_database';
-$user = 'your_username';
-$pass = 'your_password';
+$db   = 'your_database';  // Змініть на реальну назву бази даних
+$user = 'your_username';  // Змініть на реальне ім'я користувача
+$pass = 'your_password';  // Змініть на реальний пароль
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
 
 // Make sure upload directory exists
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
+    error_log("Created uploads directory: $uploadDir");
 }
 
 // Test if we can connect to the database
 try {
+    // Виводимо інформацію про спробу підключення
+    error_log("Attempting to connect to MySQL: host=$host, db=$db, user=$user");
+    
     // For mysqli connection
     $conn = new mysqli($host, $user, $pass, $db);
     if ($conn->connect_error) {
@@ -53,15 +57,23 @@ try {
         $pdo = new PDO($dsn, $user, $pass, $options);
         error_log("PDO connection successful");
         
+        // Return the PDO connection for use in other files
+        return $pdo;
+        
     } catch (\PDOException $e) {
         // Only report PDO errors if requested
         error_log("PDO Connection error: " . $e->getMessage());
-        // We don't exit here as we're using mysqli as the primary connection
+        // We still need to return the mysqli connection if PDO fails
+        return $conn;
     }
 } catch (Exception $e) {
     error_log("General exception during DB connection: " . $e->getMessage());
-    die(json_encode([
+    
+    // Send detailed error information for debugging (disable in production)
+    http_response_code(500);
+    echo json_encode([
         'success' => false,
         'message' => 'Database connection failed: ' . $e->getMessage()
-    ]));
+    ]);
+    exit;
 }

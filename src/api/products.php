@@ -2,14 +2,28 @@
 <?php
 header('Content-Type: application/json');
 
+// Включаємо відображення помилок для відлагодження
+ini_set('display_errors', 1); // В продакшн змініть на 0
+ini_set('log_errors', 1);
+error_log("Products API endpoint called. Method: " . $_SERVER['REQUEST_METHOD']);
+
 $uploadDir = __DIR__ . '/uploads/';
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
+    error_log("Created uploads directory: $uploadDir");
 }
 
 try {
+    // Отримуємо підключення до бази даних
     $pdo = require 'db_config.php';
+    
+    // Перевіряємо наявність підключення
+    if (!$pdo) {
+        throw new Exception("Failed to connect to database");
+    }
+    
     $method = $_SERVER['REQUEST_METHOD'];
+    error_log("Processing $method request for products");
 
     switch ($method) {
         case 'GET':
@@ -153,8 +167,17 @@ try {
             break;
     }
 } catch (\PDOException $e) {
+    error_log("PDO Exception in products.php: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode([
         'status' => 'error',
-        'message' => $e->getMessage()
+        'message' => 'Database error: ' . $e->getMessage()
+    ]);
+} catch (Exception $e) {
+    error_log("General Exception in products.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
