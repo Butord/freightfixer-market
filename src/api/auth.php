@@ -1,7 +1,7 @@
-
 <?php
 header('Content-Type: application/json');
 require_once 'db_config.php';
+require_once 'config.php'; // Переконуємося, що файл конфігурації включено
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -13,6 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Get the action from the URL
 $action = isset($_GET['action']) ? $_GET['action'] : '';
+
+// Enable detailed error logging for debugging
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_log("Auth action: $action");
 
 // Handle different authentication actions
 switch ($action) {
@@ -33,7 +38,7 @@ switch ($action) {
 
 // Handle user registration
 function handleRegister() {
-    global $conn;
+    global $conn, $config;
     
     // Only accept POST requests
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -44,6 +49,7 @@ function handleRegister() {
     
     // Get JSON data from request body
     $raw_data = file_get_contents('php://input');
+    error_log("Raw data received: " . $raw_data);
     $data = json_decode($raw_data, true);
     
     if (!$data) {
@@ -57,6 +63,7 @@ function handleRegister() {
     $log_data = $data;
     if (isset($log_data['password'])) $log_data['password'] = '[REDACTED]';
     if (isset($log_data['password_confirm'])) $log_data['password_confirm'] = '[REDACTED]';
+    if (isset($log_data['adminSecretCode'])) $log_data['adminSecretCode'] = '[SECRET REDACTED]';
     error_log("Register data received: " . json_encode($log_data));
     
     // Validate required fields
@@ -104,29 +111,21 @@ function handleRegister() {
         // Verify secret code for first admin
         $secretCodeValid = false;
         
-        // Load config once
-        $configFile = __DIR__ . '/config.php';
-        $adminSecretCodeEnv = null;
+        // Отримання секретного коду із змінної оточення або з файлу конфігурації
+        $adminSecretCodeConfig = getenv('ADMIN_SECRET_CODE');
         
-        // Try to get from environment first
-        $adminSecretCodeEnv = getenv('ADMIN_SECRET_CODE');
-        error_log("Admin secret code from env: " . ($adminSecretCodeEnv ? 'found' : 'not found'));
-        
-        // If not in environment, try config file
-        if (empty($adminSecretCodeEnv) && file_exists($configFile)) {
-            // Include the config file only if it exists and we need it
-            require_once $configFile;
-            if (isset($config) && isset($config['admin_secret_code'])) {
-                $adminSecretCodeEnv = $config['admin_secret_code'];
-                error_log("Admin secret code from config: " . ($adminSecretCodeEnv ? 'found' : 'not found'));
-            }
+        // Якщо немає з оточення, беремо з config.php
+        if (empty($adminSecretCodeConfig) && isset($config) && isset($config['admin_secret_code'])) {
+            $adminSecretCodeConfig = $config['admin_secret_code'];
         }
         
-        error_log("Checking admin secret code. Received code: " . substr($adminSecretCode, 0, 3) . "...");
+        error_log("Admin secret from config: " . (empty($adminSecretCodeConfig) ? 'not found' : 'found'));
+        error_log("Checking admin secret code. Received code length: " . strlen($adminSecretCode));
         
-        if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeEnv) && $adminSecretCode === $adminSecretCodeEnv) {
-            $secretCodeValid = true;
-            error_log("Secret code is valid for first admin");
+        if ($isFirstAdmin && !empty($adminSecretCode) && !empty($adminSecretCodeConfig)) {
+            // Compare the received code with the configured code
+            $secretCodeValid = ($adminSecretCode === $adminSecretCodeConfig);
+            error_log("Secret code validation result: " . ($secretCodeValid ? 'valid' : 'invalid'));
         }
         
         // Set status based on admin validation

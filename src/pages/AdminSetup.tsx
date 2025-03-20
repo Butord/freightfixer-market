@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,13 @@ export default function AdminSetup() {
   
   const navigate = useNavigate();
   const { register } = useAuthStore();
+  
+  // Отримуємо код з env (для відображення підказки, не для автозаповнення)
+  const adminSecretCodeEnv = import.meta.env.VITE_ADMIN_SECRET_CODE || '';
+  useEffect(() => {
+    console.log('Admin setup component loaded, secret code config available:', 
+      adminSecretCodeEnv ? 'yes' : 'no');
+  }, [adminSecretCodeEnv]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +136,8 @@ export default function AdminSetup() {
             />
             <p className="text-sm text-gray-500 mt-1">
               Введіть секретний код для налаштування першого адміністратора сайту.
-              Код повинен бути встановлений у змінній оточення ADMIN_SECRET_CODE на сервері
-              та VITE_ADMIN_SECRET_CODE у файлі .env для розробки.
+              Код має бути встановлений у змінній оточення ADMIN_SECRET_CODE на сервері
+              або у файлі конфігурації. За замовчуванням: {adminSecretCodeEnv ? 'встановлений' : 'не встановлений'}
             </p>
           </div>
           

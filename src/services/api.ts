@@ -1,3 +1,4 @@
+
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
@@ -26,7 +27,6 @@ const handleApiResponse = async (response: Response) => {
         const text = await response.text();
         console.error('Non-JSON error response:', text.substring(0, 500)); // Log first 500 chars
       } catch (textError) {
-        // If can't get text, just use status
         console.error('Could not read response body');
       }
       
@@ -78,6 +78,7 @@ class ApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
+        credentials: 'include' // Додаємо це для передачі куків, якщо вони знадобляться
       });
       
       console.log('Register response status:', response.status);
