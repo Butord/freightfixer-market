@@ -167,14 +167,27 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
         try {
+          console.log('Checking auth with token');
           const user = await ApiService.getCurrentUser(token);
+          console.log('Got user from API:', user);
+          
+          if (!user) {
+            throw new Error('Не вдалося отримати дані користувача');
+          }
+          
           set({
             user,
             isAuthenticated: true,
             isAdmin: user.role === 'admin',
             isLoading: false,
           });
+          console.log('Auth state updated:', {
+            authenticated: true,
+            admin: user.role === 'admin',
+            user: user
+          });
         } catch (error) {
+          console.error('Error checking auth:', error);
           set({
             user: null,
             token: null,

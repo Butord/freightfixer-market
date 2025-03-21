@@ -337,19 +337,30 @@ function getCurrentUser() {
     $token = $matches[1];
     
     // In a real app, you would validate the token here
-    // For this example, we'll just return a mock user for any token
-    // This is obviously not secure - use proper JWT validation in production
+    // For this example, we'll just fake a successful response
+    // since we don't have actual token storage in the database
     
-    // Here you would look up the user by their token
-    // Mock user data for demonstration
-    $mockUser = [
-        'id' => 1,
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'role' => 'user',
-        'status' => 'active',
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    echo json_encode($mockUser);
+    // Get user from token or redirect
+    try {
+        // Since we don't have a real token system, we'll just return success
+        // In a real app, you would validate the token and get the user data from the database
+        
+        // Create a sample user for testing
+        $user = [
+            'id' => 1,
+            'name' => 'Адміністратор',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'status' => 'active',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        error_log("getCurrentUser returning user data: " . json_encode($user));
+        
+        echo json_encode($user);
+    } catch (Exception $e) {
+        error_log("Error in getCurrentUser: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error getting user data: ' . $e->getMessage()]);
+    }
 }

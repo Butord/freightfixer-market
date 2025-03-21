@@ -109,7 +109,8 @@ class ApiService {
   }
 
   static async getCurrentUser(token: string): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    console.log('Get current user URL:', `${API_BASE_URL}/auth.php?action=me`);
+    const response = await fetch(`${API_BASE_URL}/auth.php?action=me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

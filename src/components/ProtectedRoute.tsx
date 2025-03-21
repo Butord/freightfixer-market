@@ -1,13 +1,19 @@
 
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
 export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, isLoading, user } = useAuthStore();
+  const { isAuthenticated, isAdmin, isLoading, user, checkAuth } = useAuthStore();
+
+  // Перевіряємо авторизацію при монтуванні компонента
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   // Перевіряємо завантаження
   if (isLoading) {
