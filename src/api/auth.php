@@ -328,6 +328,8 @@ function getCurrentUser() {
     $headers = getallheaders();
     $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
     
+    error_log("Auth header: " . ($authHeader ? substr($authHeader, 0, 20) . '...' : 'not found'));
+    
     if (!$authHeader || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'No token provided']);
@@ -335,6 +337,7 @@ function getCurrentUser() {
     }
     
     $token = $matches[1];
+    error_log("Token extracted: " . substr($token, 0, 10) . '...');
     
     // In a real app, you would validate the token here
     // For this example, we'll just fake a successful response

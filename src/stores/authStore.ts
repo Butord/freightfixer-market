@@ -163,15 +163,25 @@ export const useAuthStore = create<AuthState>()(
 
       checkAuth: async () => {
         const { token } = get();
-        if (!token) return;
+        if (!token) {
+          // Якщо токен відсутній, скидаємо стан авторизації
+          set({
+            user: null,
+            isAuthenticated: false,
+            isAdmin: false,
+            isLoading: false,
+          });
+          return;
+        }
 
         set({ isLoading: true });
         try {
-          console.log('Checking auth with token');
+          console.log('Checking auth with token:', token.substring(0, 10) + '...');
           const user = await ApiService.getCurrentUser(token);
           console.log('Got user from API:', user);
           
-          if (!user) {
+          if (!user || !user.id) {
+            console.error('Invalid user data received:', user);
             throw new Error('Не вдалося отримати дані користувача');
           }
           
@@ -188,6 +198,7 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error) {
           console.error('Error checking auth:', error);
+          // При помилці авторизації, очищаємо стан
           set({
             user: null,
             token: null,
@@ -200,7 +211,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      partialize: (state) => ({ token: state.token }),
     }
   )
 );

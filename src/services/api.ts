@@ -1,4 +1,3 @@
-
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
@@ -110,13 +109,30 @@ class ApiService {
 
   static async getCurrentUser(token: string): Promise<User> {
     console.log('Get current user URL:', `${API_BASE_URL}/auth.php?action=me`);
-    const response = await fetch(`${API_BASE_URL}/auth.php?action=me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
     
-    return handleApiResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth.php?action=me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        console.error('getCurrentUser response not OK:', response.status, response.statusText);
+        if (response.status === 401) {
+          throw new Error('Токен не валідний або закінчився');
+        }
+      }
+      
+      return handleApiResponse(response);
+    } catch (error) {
+      console.error('getCurrentUser error:', error);
+      throw error;
+    }
   }
 
   // New methods for managing users

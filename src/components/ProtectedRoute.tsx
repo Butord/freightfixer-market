@@ -1,22 +1,35 @@
 
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
 export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, isLoading, user, checkAuth } = useAuthStore();
+  const { isAuthenticated, isAdmin, isLoading, user, checkAuth, token } = useAuthStore();
+  const [isChecking, setIsChecking] = useState(true);
 
   // Перевіряємо авторизацію при монтуванні компонента
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    const verifyAuth = async () => {
+      try {
+        await checkAuth();
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    
+    if (token) {
+      verifyAuth();
+    } else {
+      setIsChecking(false);
+    }
+  }, [checkAuth, token]);
 
-  // Перевіряємо завантаження
-  if (isLoading) {
+  // Показуємо індикатор завантаження під час перевірки або завантаження даних
+  if (isLoading || isChecking) {
     return <div className="flex justify-center items-center h-screen">Завантаження...</div>;
   }
 
