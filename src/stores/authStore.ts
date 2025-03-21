@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import ApiService from '@/services/api';
@@ -34,7 +33,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await ApiService.login(credentials);
           
-          // Перевіряємо, чи адміністратор активований
           if (response.user && response.user.role === 'admin' && response.user.status === 'pending') {
             set({ isLoading: false });
             toast.error('Ваш обліковий запис адміністратора очікує підтвердження');
@@ -66,13 +64,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log('Registering user with role:', userData.role);
           
-          // Перевіряємо, чи це реєстрація адміністратора з використанням спеціального коду
           const isFirstAdminSetup = userData.role === 'admin' && userData.adminSecretCode;
           
-          // Відправляємо секретний код на сервер для першого адміністратора
           let dataToSend = userData;
           
-          // Якщо це реєстрація першого адміністратора через AdminSetup, додаємо код
           if (isFirstAdminSetup) {
             dataToSend = {
               ...userData,
@@ -84,7 +79,6 @@ export const useAuthStore = create<AuthState>()(
           const response = await ApiService.register(dataToSend);
           console.log('Registration response:', response);
           
-          // Перевіряємо чи є відповідь від сервера
           if (!response) {
             set({ isLoading: false });
             console.error('Empty response from server');
@@ -94,7 +88,6 @@ export const useAuthStore = create<AuthState>()(
             };
           }
           
-          // Якщо відповідь успішна, але без даних користувача
           if (response.success === false) {
             set({ isLoading: false });
             return { 
@@ -103,7 +96,6 @@ export const useAuthStore = create<AuthState>()(
             };
           }
           
-          // Перевіряємо наявність користувача в відповіді
           if (!response.user) {
             set({ isLoading: false });
             console.error('Response missing user data:', response);
@@ -113,7 +105,6 @@ export const useAuthStore = create<AuthState>()(
             };
           }
           
-          // Перевіряємо статус користувача в відповіді, якщо він є
           if (response.user.status === 'pending') {
             toast.info('Ваш запит на створення облікового запису адміністратора надіслано. Очікуйте підтвердження.');
             set({ isLoading: false });
@@ -123,7 +114,6 @@ export const useAuthStore = create<AuthState>()(
             };
           }
           
-          // Якщо користувач активний, встановлюємо його дані
           set({
             user: response.user,
             token: response.token,
@@ -132,7 +122,6 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           
-          // Показуємо повідомлення про успіх
           if (response.user.role === 'admin') {
             toast.success('Реєстрація адміністратора успішна!');
           } else {
@@ -164,7 +153,7 @@ export const useAuthStore = create<AuthState>()(
       checkAuth: async () => {
         const { token } = get();
         if (!token) {
-          // Якщо токен відсутній, скидаємо стан авторизації
+          console.log('No token found, skipping auth check');
           set({
             user: null,
             isAuthenticated: false,
@@ -198,20 +187,20 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error) {
           console.error('Error checking auth:', error);
-          // При помилці авторизації, очищаємо стан
           set({
             user: null,
             token: null,
             isAuthenticated: false,
             isAdmin: false,
             isLoading: false,
+            error: error instanceof Error ? error.message : 'Помилка авторизації',
           });
         }
       },
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token }),
+      partialize: (state) => ({ token: state.token, user: state.user }),
     }
   )
 );

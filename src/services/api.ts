@@ -1,3 +1,4 @@
+
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
@@ -109,6 +110,12 @@ class ApiService {
 
   static async getCurrentUser(token: string): Promise<User> {
     console.log('Get current user URL:', `${API_BASE_URL}/auth.php?action=me`);
+    console.log('Using token:', token ? `${token.substring(0, 10)}...` : 'No token');
+    
+    if (!token) {
+      console.error('No token provided to getCurrentUser');
+      throw new Error('Токен відсутній');
+    }
     
     try {
       const response = await fetch(`${API_BASE_URL}/auth.php?action=me`, {
@@ -126,9 +133,18 @@ class ApiService {
         if (response.status === 401) {
           throw new Error('Токен не валідний або закінчився');
         }
+        throw new Error(`Помилка сервера: ${response.status} ${response.statusText}`);
       }
       
-      return handleApiResponse(response);
+      // Attempt to parse the response
+      try {
+        const data = await response.json();
+        console.log('User data received:', data);
+        return data;
+      } catch (parseError) {
+        console.error('Error parsing JSON response:', parseError);
+        throw new Error('Помилка при отриманні даних користувача');
+      }
     } catch (error) {
       console.error('getCurrentUser error:', error);
       throw error;

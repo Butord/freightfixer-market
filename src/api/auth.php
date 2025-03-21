@@ -1,4 +1,3 @@
-
 <?php
 header('Content-Type: application/json');
 
@@ -11,9 +10,6 @@ require_once 'db_config.php';
 // Load the config with admin_secret_code
 $config = require_once 'config.php';
 error_log("Config loaded, secret code available: " . (isset($config['admin_secret_code']) ? "yes" : "no"));
-if (isset($config['admin_secret_code'])) {
-    error_log("Admin secret code from config.php: " . substr($config['admin_secret_code'], 0, 3) . "*** (length: " . strlen($config['admin_secret_code']) . ")");
-}
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -339,16 +335,10 @@ function getCurrentUser() {
     $token = $matches[1];
     error_log("Token extracted: " . substr($token, 0, 10) . '...');
     
-    // In a real app, you would validate the token here
-    // For this example, we'll just fake a successful response
-    // since we don't have actual token storage in the database
-    
-    // Get user from token or redirect
+    // For development purposes, we'll accept any token and return a mock user
+    // In a real app, you would validate the token properly
     try {
-        // Since we don't have a real token system, we'll just return success
-        // In a real app, you would validate the token and get the user data from the database
-        
-        // Create a sample user for testing
+        // Create a sample user for testing - ensure we have consistent data here
         $user = [
             'id' => 1,
             'name' => 'Адміністратор',
@@ -360,6 +350,8 @@ function getCurrentUser() {
         
         error_log("getCurrentUser returning user data: " . json_encode($user));
         
+        // Return a successful response with status code 200
+        http_response_code(200);
         echo json_encode($user);
     } catch (Exception $e) {
         error_log("Error in getCurrentUser: " . $e->getMessage());
@@ -367,3 +359,4 @@ function getCurrentUser() {
         echo json_encode(['success' => false, 'message' => 'Error getting user data: ' . $e->getMessage()]);
     }
 }
+
