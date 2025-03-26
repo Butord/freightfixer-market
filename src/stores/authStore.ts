@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import ApiService from '@/services/api';
@@ -7,6 +8,7 @@ import { toast } from 'sonner';
 interface AuthState {
   user: User | null;
   token: string | null;
+  tokenExpires: number | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -16,6 +18,7 @@ interface AuthState {
   register: (userData: RegisterRequest) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  isTokenValid: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,10 +26,19 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      tokenExpires: null,
       isAuthenticated: false,
       isAdmin: false,
       isLoading: false,
       error: null,
+
+      isTokenValid: () => {
+        const { token, tokenExpires } = get();
+        if (!token || !tokenExpires) return false;
+        
+        // Перевіряємо чи не прострочений токен (додаємо 5-секундний буфер)
+        return tokenExpires > (Date.now() / 1000) + 5;
+      },
 
       login: async (credentials) => {
         set({ isLoading: true, error: null });
@@ -42,10 +54,12 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: response.user,
             token: response.token,
+            tokenExpires: response.expires || null,
             isAuthenticated: true,
             isAdmin: response.user && response.user.role === 'admin',
             isLoading: false,
           });
+          
           toast.success('Успішний вхід!');
           return { success: true };
         } catch (error) {
@@ -117,6 +131,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: response.user,
             token: response.token,
+            tokenExpires: response.expires || null,
             isAuthenticated: true,
             isAdmin: response.user.role === 'admin',
             isLoading: false,
@@ -144,6 +159,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
+          tokenExpires: null,
           isAuthenticated: false,
           isAdmin: false,
         });
@@ -151,11 +167,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        const { token } = get();
-        if (!token) {
-          console.log('No token found, skipping auth check');
+        const { token, isTokenValid } = get();
+        
+        // Перевіряємо чи токен валідний за терміном
+        if (!token || !isTokenValid()) {
+          console.log('Token is missing or expired, clearing auth state');
           set({
             user: null,
+            token: null,
+            tokenExpires: null,
             isAuthenticated: false,
             isAdmin: false,
             isLoading: false,
@@ -190,6 +210,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: null,
             token: null,
+            tokenExpires: null,
             isAuthenticated: false,
             isAdmin: false,
             isLoading: false,
@@ -200,7 +221,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      partialize: (state) => ({ 
+        token: state.token, 
+        user: state.user,
+        tokenExpires: state.tokenExpires
+      }),
     }
   )
 );

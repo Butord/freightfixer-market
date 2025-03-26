@@ -25,6 +25,7 @@ export interface RegisterRequest {
 export interface AuthResponse {
   user: User;
   token: string;
+  expires?: number; // Додаємо поле для терміну дії токена
   success: boolean;
   message?: string;
 }

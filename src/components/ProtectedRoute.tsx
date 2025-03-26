@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isAdmin, isLoading, user, checkAuth, token } = useAuthStore();
+  const { isAuthenticated, isAdmin, isLoading, user, checkAuth, token, isTokenValid } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
 
   // Перевіряємо авторизацію при монтуванні компонента
@@ -17,6 +17,12 @@ export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteP
     const verifyAuth = async () => {
       try {
         console.log('Verifying authentication in ProtectedRoute');
+        // Перевіряємо чи токен ще валідний перед запитом до API
+        if (!isTokenValid()) {
+          console.log('Token is invalid or expired');
+          setIsChecking(false);
+          return;
+        }
         await checkAuth();
       } catch (error) {
         console.error('Error in verifyAuth:', error);
@@ -31,7 +37,7 @@ export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteP
       console.log('No token found in ProtectedRoute');
       setIsChecking(false);
     }
-  }, [checkAuth, token]);
+  }, [checkAuth, token, isTokenValid]);
 
   // Показуємо індикатор завантаження під час перевірки або завантаження даних
   if (isLoading || isChecking) {

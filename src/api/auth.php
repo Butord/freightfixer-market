@@ -1,3 +1,4 @@
+
 <?php
 header('Content-Type: application/json');
 
@@ -298,14 +299,24 @@ function handleLogin() {
     // Remove password from user data
     unset($user['password']);
     
-    // Generate a simple token (in a real app, use a proper JWT library)
-    $token = bin2hex(random_bytes(32));
+    // Generate token with expiration time (24 hours)
+    $expiration = time() + (24 * 60 * 60); // 24 hours from now
+    $tokenData = [
+        'user_id' => $user['id'],
+        'email' => $user['email'],
+        'exp' => $expiration
+    ];
+    
+    // Convert to JSON and encode in base64
+    $tokenJson = json_encode($tokenData);
+    $token = base64_encode($tokenJson);
     
     echo json_encode([
         'success' => true,
         'message' => 'Login successful',
         'user' => $user,
-        'token' => $token
+        'token' => $token,
+        'expires' => $expiration
     ]);
 }
 
@@ -335,28 +346,53 @@ function getCurrentUser() {
     $token = $matches[1];
     error_log("Token extracted: " . substr($token, 0, 10) . '...');
     
-    // For development purposes, we'll accept any token and return a mock user
-    // In a real app, you would validate the token properly
+    // Decode and verify the token
     try {
-        // Create a sample user for testing - ensure we have consistent data here
-        $user = [
-            'id' => 1,
-            'name' => 'Адміністратор',
-            'email' => 'admin@example.com',
-            'role' => 'admin',
-            'status' => 'active',
-            'created_at' => date('Y-m-d H:i:s')
-        ];
+        // Decode base64 token
+        $tokenJson = base64_decode($token);
+        if (!$tokenJson) {
+            throw new Exception("Invalid token format");
+        }
         
-        error_log("getCurrentUser returning user data: " . json_encode($user));
+        $tokenData = json_decode($tokenJson, true);
+        if (!$tokenData || !isset($tokenData['user_id']) || !isset($tokenData['exp'])) {
+            throw new Exception("Invalid token data");
+        }
         
-        // Return a successful response with status code 200
+        // Check if token has expired
+        if ($tokenData['exp'] < time()) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token expired']);
+            return;
+        }
+        
+        // Get user data from database using user_id from token
+        $userId = $tokenData['user_id'];
+        $stmt = $conn->prepare("SELECT id, name, email, role, status, created_at FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception("User not found");
+        }
+        
+        $user = $result->fetch_assoc();
+        
+        // Check if user is active
+        if ($user['status'] !== 'active') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Your account is pending approval']);
+            return;
+        }
+        
+        // Return user data
         http_response_code(200);
         echo json_encode($user);
+        
     } catch (Exception $e) {
-        error_log("Error in getCurrentUser: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Error getting user data: ' . $e->getMessage()]);
+        error_log("Error verifying token: " . $e->getMessage());
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Invalid or expired token']);
     }
 }
-

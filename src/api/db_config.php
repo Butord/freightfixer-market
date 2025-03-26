@@ -11,17 +11,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // Enable error logging
-ini_set('display_errors', 1);  // Увімкнено для показу помилок (змініть на 0 в продакшн)
+ini_set('display_errors', 0);  // Вимкнено для продакшн (змінено з 1)
 ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
-// Database configuration
-$host = 'localhost';
-$db   = 'your_database';  // Змініть на реальну назву бази даних
-$user = 'your_username';  // Змініть на реальне ім'я користувача
-$pass = 'your_password';  // Змініть на реальний пароль
+// Try to get database configuration from environment variables
+$host = getenv('DB_HOST') ?: 'localhost';
+$db = getenv('DB_NAME') ?: 'your_database';
+$user = getenv('DB_USER') ?: 'your_username';
+$pass = getenv('DB_PASS') ?: 'your_password';
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
+
+// Database credentials file (more secure than env vars in some setups)
+$dbConfigFile = __DIR__ . '/../../secrets/db_config.php';
+if (file_exists($dbConfigFile)) {
+    $dbConfig = require $dbConfigFile;
+    if (is_array($dbConfig)) {
+        if (isset($dbConfig['host'])) $host = $dbConfig['host'];
+        if (isset($dbConfig['db'])) $db = $dbConfig['db'];
+        if (isset($dbConfig['user'])) $user = $dbConfig['user'];
+        if (isset($dbConfig['pass'])) $pass = $dbConfig['pass'];
+    }
+    error_log("Loaded database configuration from file");
+}
 
 // Make sure upload directory exists
 if (!file_exists($uploadDir)) {
@@ -31,7 +44,7 @@ if (!file_exists($uploadDir)) {
 
 // Test if we can connect to the database
 try {
-    // Виводимо інформацію про спробу підключення
+    // Log connection attempt without revealing credentials
     error_log("Attempting to connect to MySQL: host=$host, db=$db, user=$user");
     
     // For mysqli connection
@@ -69,11 +82,11 @@ try {
 } catch (Exception $e) {
     error_log("General exception during DB connection: " . $e->getMessage());
     
-    // Send detailed error information for debugging (disable in production)
+    // Send error in JSON format for API consistency, but without revealing sensitive information
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Database connection failed: ' . $e->getMessage()
+        'message' => 'Database connection failed. Please contact administrator.'
     ]);
     exit;
 }
