@@ -1,0 +1,35 @@
+
+FROM php:8.1-apache
+
+# Enable Apache modules and PHP extensions
+RUN a2enmod rewrite
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# Update package lists and install necessary packages
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    git
+
+# Set the working directory
+WORKDIR /var/www/html
+
+# Copy the API files
+COPY ./src/api /var/www/html/api
+
+# Create secrets directory
+RUN mkdir -p /var/www/secrets
+RUN chmod 700 /var/www/secrets
+
+# Copy Apache configuration
+COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache server
+CMD ["apache2-foreground"]
