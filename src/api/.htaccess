@@ -22,11 +22,13 @@ RewriteRule ^auth/me/?$ auth.php?action=me [NC,L]
 RewriteRule ^users/?$ users.php [NC,L]
 RewriteRule ^users/([0-9]+)/?$ users.php?id=$1 [NC,L]
 
-# Set default headers for all responses
+# Dynamic CORS headers - important for credentials
 <IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
+    SetEnvIf Origin "^(.*)$" ORIGIN=$1
+    Header set Access-Control-Allow-Origin "%{ORIGIN}e" env=ORIGIN
     Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header set Access-Control-Allow-Credentials "true"
 </IfModule>
 
 # Handle OPTIONS requests

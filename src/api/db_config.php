@@ -1,10 +1,10 @@
 
 <?php
-// Отримати значення дозволеного origin з середовища
-$allowedOrigin = getenv('CORS_ALLOW_ORIGIN') ?: '*';
+// Отримати значення дозволеного origin з запиту
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
 
 // Встановити заголовки CORS
-header("Access-Control-Allow-Origin: $allowedOrigin");
+header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Access-Control-Allow-Credentials: true');
