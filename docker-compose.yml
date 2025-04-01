@@ -19,6 +19,12 @@ services:
       - backend
     networks:
       - app-network
+    # Add healthcheck to ensure service is working
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Backend PHP Server
   backend:
@@ -40,6 +46,12 @@ services:
       - database
     networks:
       - app-network
+    # Add healthcheck to ensure PHP server is running
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/healthcheck.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # MySQL Database
   database:
@@ -54,6 +66,12 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
+    # Add healthcheck for MySQL
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   mysql_data:

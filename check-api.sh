@@ -1,35 +1,39 @@
 
 #!/bin/bash
 
-# Простий скрипт для перевірки доступності API сервера
+# Script for checking API server availability
 
-echo "Перевірка API сервера..."
+echo "Checking API server..."
 echo "API URL: ${VITE_API_URL:-http://localhost:8000/api}"
 
-# Перевірка підключення HTTP
-curl -I "${VITE_API_URL:-http://localhost:8000/api}/auth.php?action=register" 2>/dev/null | head -n 1
+# Check HTTP connection
+curl -I "${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php" 2>/dev/null | head -n 1
 
-# Якщо curl не працює, спробувати wget
+# If curl doesn't work, try wget
 if [ $? -ne 0 ]; then
-  echo "curl не працює, спробуємо wget..."
-  wget -q --spider "${VITE_API_URL:-http://localhost:8000/api}/auth.php?action=register"
+  echo "curl failed, trying wget..."
+  wget -q --spider "${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php"
   if [ $? -eq 0 ]; then
-    echo "API доступний через wget!"
+    echo "API available via wget!"
   else
-    echo "API недоступний. Переконайтеся, що сервер запущено."
+    echo "API unavailable. Make sure the server is running."
   fi
 fi
 
-# Перевірити конфігурацію Docker
-echo -e "\nПеревірка контейнерів Docker:"
+# Check Docker containers
+echo -e "\nChecking Docker containers:"
 docker ps | grep -E 'frontend|backend|database'
 
-# Перевірити логи контейнерів
-echo -e "\nПеревірка логів backend контейнера (останні 10 рядків):"
+# Check backend container logs
+echo -e "\nChecking backend container logs (last 10 lines):"
 docker-compose logs --tail=10 backend
 
-echo -e "\nДодаткові кроки для налагодження:"
-echo "1. Виконайте 'docker-compose down' і потім 'docker-compose up -d'"
-echo "2. Перевірте чи порт 8000 не блокується брандмауером"
-echo "3. Переконайтеся, що змінна VITE_API_URL встановлена правильно в .env файлі"
-echo "4. Спробуйте відкрити ${VITE_API_URL:-http://localhost:8000/api} у вашому браузері"
+echo -e "\nChecking frontend container logs (last 10 lines):"
+docker-compose logs --tail=10 frontend
+
+echo -e "\nTroubleshooting steps:"
+echo "1. Run 'docker-compose down' and then 'docker-compose up -d'"
+echo "2. Check if port 8000 is being blocked by a firewall"
+echo "3. Ensure VITE_API_URL is set correctly in the .env file"
+echo "4. Try accessing ${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php in your browser"
+echo "5. If running alongside Denwer, make sure there are no port conflicts"

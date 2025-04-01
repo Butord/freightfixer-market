@@ -1,35 +1,40 @@
 
 FROM php:8.1-apache
 
-# Увімкнути модулі Apache та розширення PHP
+# Enable Apache modules and PHP extensions
 RUN a2enmod rewrite headers
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Оновити списки пакетів та встановити необхідні пакети
+# Update package lists and install necessary packages
 RUN apt-get update && apt-get install -y \
     zip \
     unzip \
-    git
+    git \
+    curl
 
-# Встановити робочу директорію
+# Set working directory
 WORKDIR /var/www/html
 
-# Копіювати файли API
+# Copy API files
 COPY ./src/api /var/www/html/api
 
-# Створити директорію secrets
+# Create secrets directory
 RUN mkdir -p /var/www/secrets
 RUN chmod 700 /var/www/secrets
 
-# Копіювати конфігурацію Apache
+# Copy Apache configuration
 COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Встановити дозволи
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
 
-# Відкрити порт 80
+# Configure PHP
+RUN echo "display_errors = On" >> /usr/local/etc/php/php.ini
+RUN echo "error_reporting = E_ALL" >> /usr/local/etc/php/php.ini
+
+# Expose port 80
 EXPOSE 80
 
-# Запустити сервер Apache
+# Start Apache server
 CMD ["apache2-foreground"]
