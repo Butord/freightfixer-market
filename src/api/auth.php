@@ -1,30 +1,36 @@
 
 <?php
-header('Content-Type: application/json');
-
-// Enable detailed error logging for debugging
-ini_set('display_errors', 0);
+// Включить детальне журналювання помилок для налагодження
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 error_log("Auth request received: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
 
+// Отримати значення дозволеного origin з середовища
+$allowedOrigin = getenv('CORS_ALLOW_ORIGIN') ?: '*';
+
+// Встановити заголовки CORS і типу вмісту
+header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: $allowedOrigin");
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
+
 require_once 'db_config.php';
-// Load the config with admin_secret_code
+// Завантажити конфіг з admin_secret_code
 $config = require_once 'config.php';
 error_log("Config loaded, secret code available: " . (isset($config['admin_secret_code']) ? "yes" : "no"));
 
-// Handle preflight OPTIONS request
+// Обробка попереднього запиту OPTIONS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    http_response_code(200);
     exit(0);
 }
 
-// Get the action from the URL
+// Отримати дію з URL
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 error_log("Auth action: $action");
 
-// Handle different authentication actions
+// Обробка різних дій аутентифікації
 switch ($action) {
     case 'register':
         handleRegister();

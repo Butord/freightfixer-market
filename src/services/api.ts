@@ -2,11 +2,14 @@
 import { Product, Category, Order } from '@/types/api';
 import { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from '@/types/auth';
 
-// Base API URL with trailing slash removed to avoid double slashes
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://autoss-best.com/arm3/api').replace(/\/$/, '');
+// Базовий URL API з видаленим трейлінговим слешем для уникнення подвійних слешів
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+
+// Для відображення URL в консолі - допомагає при налагодженні
+console.log('API Base URL:', API_BASE_URL);
 
 /**
- * Helper to handle API response errors
+ * Допоміжна функція для обробки помилок відповіді API
  */
 const handleApiResponse = async (response: Response) => {
   if (!response) {
@@ -14,44 +17,44 @@ const handleApiResponse = async (response: Response) => {
     throw new Error('Не вдалося отримати відповідь від сервера');
   }
 
-  // Check if response is ok before trying to parse JSON
+  // Перевірити чи відповідь ОК перед спробою розбору JSON
   if (!response.ok) {
-    // Try to parse JSON error response first
+    // Спочатку спробувати розібрати JSON відповідь про помилку
     try {
       const errorData = await response.json();
       console.error('Server error response:', errorData);
       throw new Error(errorData.message || `Помилка сервера: ${response.status} ${response.statusText}`);
     } catch (jsonError) {
-      // If response is not JSON, get as text
+      // Якщо відповідь не JSON, отримати як текст
       try {
         const text = await response.text();
-        console.error('Non-JSON error response:', text ? text.substring(0, 500) : '(empty response)'); // Log first 500 chars
+        console.error('Non-JSON error response:', text ? text.substring(0, 500) : '(empty response)'); // Журналювати перші 500 символів
       } catch (textError) {
         console.error('Could not read response body');
       }
       
-      // Include the URL that failed in the error message
+      // Включити URL, який не вдався, в повідомлення про помилку
       const url = response.url || 'unknown URL';
       throw new Error(`Помилка сервера: ${response.status} ${response.statusText} при запиті до ${url}`);
     }
   }
 
-  // Check for empty responses
+  // Перевірити порожні відповіді
   const contentLength = response.headers.get('content-length');
   if (contentLength === '0') {
     console.error('Empty response body received');
     return { success: false, message: 'Сервер повернув порожню відповідь' };
   }
 
-  // Check for non-JSON responses for successful responses
+  // Перевірити відповіді не-JSON для успішних відповідей
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
-    // If response is HTML or other non-JSON format, log it for debugging
+    // Якщо відповідь HTML або інший формат не-JSON, журналювати для налагодження
     try {
       const text = await response.text();
-      console.error('Non-JSON response received:', text ? text.substring(0, 500) : '(empty response)'); // Log first 500 chars
+      console.error('Non-JSON response received:', text ? text.substring(0, 500) : '(empty response)'); // Журналювати перші 500 символів
       
-      // Include the URL that failed in the error message
+      // Включити URL, який не вдався, в повідомлення про помилку
       const url = response.url || 'unknown URL';
       throw new Error(`Неочікувана відповідь від сервера при запиті до ${url}. Перевірте консоль для деталей.`);
     } catch (textError) {
@@ -60,7 +63,7 @@ const handleApiResponse = async (response: Response) => {
     }
   }
 
-  // Parse JSON response
+  // Розібрати JSON відповідь
   try {
     return await response.json();
   } catch (error) {
@@ -70,19 +73,26 @@ const handleApiResponse = async (response: Response) => {
 };
 
 class ApiService {
-  // Authentication methods
+  // Методи аутентифікації
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('Login request URL:', `${API_BASE_URL}/auth.php?action=login`);
-    const response = await fetch(`${API_BASE_URL}/auth.php?action=login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-      credentials: 'include' // Include cookies with the request
-    });
+    const url = `${API_BASE_URL}/auth.php?action=login`;
+    console.log('Login request URL:', url);
     
-    return handleApiResponse(response);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+        credentials: 'include' // Включити куки з запитом
+      });
+      
+      return handleApiResponse(response);
+    } catch (error) {
+      console.error('Network error during login:', error);
+      throw new Error(`Помилка мережі: ${error instanceof Error ? error.message : 'невідома помилка'}`);
+    }
   }
 
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
@@ -97,7 +107,7 @@ class ApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
-        credentials: 'include' // Include cookies with the request
+        credentials: 'include' // Включити куки з запитом
       });
       
       console.log('Register response status:', response.status);
@@ -109,7 +119,8 @@ class ApiService {
   }
 
   static async getCurrentUser(token: string): Promise<User> {
-    console.log('Get current user URL:', `${API_BASE_URL}/auth.php?action=me`);
+    const url = `${API_BASE_URL}/auth.php?action=me`;
+    console.log('Get current user URL:', url);
     console.log('Using token:', token ? `${token.substring(0, 10)}...` : 'No token');
     
     if (!token) {
@@ -118,7 +129,7 @@ class ApiService {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/auth.php?action=me`, {
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -136,7 +147,7 @@ class ApiService {
         throw new Error(`Помилка сервера: ${response.status} ${response.statusText}`);
       }
       
-      // Attempt to parse the response
+      // Спроба розібрати відповідь
       try {
         const data = await response.json();
         console.log('User data received:', data);

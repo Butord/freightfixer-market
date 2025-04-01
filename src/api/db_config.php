@@ -1,21 +1,26 @@
 
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// Отримати значення дозволеного origin з середовища
+$allowedOrigin = getenv('CORS_ALLOW_ORIGIN') ?: '*';
 
-// If this is an OPTIONS request, respond with 200 Success
+// Встановити заголовки CORS
+header("Access-Control-Allow-Origin: $allowedOrigin");
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
+
+// Якщо це OPTIONS запит, відповідаємо успіхом
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Enable error logging
-ini_set('display_errors', 0);  // Вимкнено для продакшн (змінено з 1)
+// Включити журналювання помилок
+ini_set('display_errors', 0);  // Вимкнено для продакшн
 ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
-// Try to get database configuration from environment variables
+// Спробувати отримати конфігурацію бази даних з змінних середовища
 $host = getenv('DB_HOST') ?: 'localhost';
 $db = getenv('DB_NAME') ?: 'your_database';
 $user = getenv('DB_USER') ?: 'your_username';
@@ -23,7 +28,7 @@ $pass = getenv('DB_PASS') ?: 'your_password';
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
 
-// Database credentials file (more secure than env vars in some setups)
+// Файл з даними для підключення до бази даних (більш безпечний, ніж змінні середовища в деяких конфігураціях)
 $dbConfigFile = __DIR__ . '/../../secrets/db_config.php';
 if (file_exists($dbConfigFile)) {
     $dbConfig = require $dbConfigFile;
@@ -36,29 +41,29 @@ if (file_exists($dbConfigFile)) {
     error_log("Loaded database configuration from file");
 }
 
-// Make sure upload directory exists
+// Переконатися, що директорія для завантаження існує
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
     error_log("Created uploads directory: $uploadDir");
 }
 
-// Test if we can connect to the database
+// Перевірити чи можемо ми з'єднатися з базою даних
 try {
-    // Log connection attempt without revealing credentials
+    // Журналювати спробу з'єднання без розкриття облікових даних
     error_log("Attempting to connect to MySQL: host=$host, db=$db, user=$user");
     
-    // For mysqli connection
+    // Для з'єднання mysqli
     $conn = new mysqli($host, $user, $pass, $db);
     if ($conn->connect_error) {
         error_log("DB Connection failed: " . $conn->connect_error);
-        // Don't exit here - let the script continue and handle the error gracefully
+        // Не виходимо тут - дозволяємо скрипту продовжувати і елегантно обробляти помилку
     } else {
         error_log("DB Connection successful");
-        // Set character set
+        // Встановити набір символів
         $conn->set_charset($charset);
     }
     
-    // For PDO connection if needed later
+    // Для з'єднання PDO, якщо потрібно пізніше
     try {
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
         $options = [
@@ -70,19 +75,19 @@ try {
         $pdo = new PDO($dsn, $user, $pass, $options);
         error_log("PDO connection successful");
         
-        // Return the PDO connection for use in other files
+        // Повернути з'єднання PDO для використання в інших файлах
         return $pdo;
         
     } catch (\PDOException $e) {
-        // Only report PDO errors if requested
+        // Повідомляти про помилки PDO тільки якщо запитується
         error_log("PDO Connection error: " . $e->getMessage());
-        // We still need to return the mysqli connection if PDO fails
+        // Нам все ще потрібно повернути з'єднання mysqli, якщо PDO не вдається
         return $conn;
     }
 } catch (Exception $e) {
     error_log("General exception during DB connection: " . $e->getMessage());
     
-    // Send error in JSON format for API consistency, but without revealing sensitive information
+    // Відправити помилку у форматі JSON для узгодженості API, але без розкриття чутливої інформації
     http_response_code(500);
     echo json_encode([
         'success' => false,
