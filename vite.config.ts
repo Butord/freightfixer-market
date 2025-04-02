@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/arm3/", // Базовий шлях для статичних файлів
+  base: "/", // Змінено базовий шлях з "/arm3/" на "/"
   server: {
     host: "::",
     port: 8080,
@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    chunkSizeWarningLimit: 1000, // Збільшуємо ліміт попередження до 1000 кБ
+    chunkSizeWarningLimit: 1000,
   },
   plugins: [
     react(),

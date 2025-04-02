@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,8 +25,8 @@ import { useAuthStore } from "./stores/authStore";
 
 const queryClient = new QueryClient();
 
-// Отримуємо базовий шлях з налаштувань Vite
-const basename = import.meta.env.BASE_URL || '/arm3/';
+// Оновлено базовий шлях - прибрано "/arm3/"
+const basename = import.meta.env.BASE_URL || '/';
 
 const App = () => {
   const { checkAuth } = useAuthStore();
