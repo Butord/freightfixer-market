@@ -45,6 +45,6 @@ echo 3. Restart containers: 'docker-compose down' and then 'docker-compose up -d
 echo 4. Check if port 8000 is being blocked by a firewall
 echo 5. Ensure VITE_API_URL is set correctly in the .env file
 echo 6. Try accessing %VITE_API_URL%/healthcheck.php in your browser
-echo 7. If running alongside Denwer, make sure there are no port conflicts
+echo 7. MySQL is now accessible on port 3307 instead of 3306
 
 pause
