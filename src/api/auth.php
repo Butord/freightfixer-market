@@ -6,14 +6,32 @@ ini_set('log_errors', 1);
 error_log("Auth request received: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
 
 // Отримати значення дозволеного origin з середовища або запиту
-$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
 // Встановити заголовки CORS і типу вмісту
 header('Content-Type: application/json');
-header("Access-Control-Allow-Origin: $origin");
+
+// Only set the specific origin header if an origin was detected
+if (!empty($origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header('Access-Control-Allow-Credentials: true');
+} else {
+    // Fallback for local development if origin header is missing
+    $allowedOrigins = [
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
+    ];
+    
+    foreach ($allowedOrigins as $allowedOrigin) {
+        error_log("Checking allowed origin: $allowedOrigin");
+        header("Access-Control-Allow-Origin: $allowedOrigin");
+        break; // Use the first one as fallback
+    }
+    header('Access-Control-Allow-Credentials: true');
+}
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-header('Access-Control-Allow-Credentials: true');
 
 require_once 'db_config.php';
 // Завантажити конфіг з admin_secret_code

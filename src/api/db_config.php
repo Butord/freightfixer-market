@@ -1,13 +1,28 @@
 
 <?php
 // Отримати значення дозволеного origin з запиту
-$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '*';
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
 // Встановити заголовки CORS
-header("Access-Control-Allow-Origin: $origin");
+if (!empty($origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header('Access-Control-Allow-Credentials: true');
+} else {
+    // Fallback for local development if origin header is missing
+    $allowedOrigins = [
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
+    ];
+    
+    foreach ($allowedOrigins as $allowedOrigin) {
+        header("Access-Control-Allow-Origin: $allowedOrigin");
+        break; // Use the first one as fallback
+    }
+    header('Access-Control-Allow-Credentials: true');
+}
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-header('Access-Control-Allow-Credentials: true');
 
 // Якщо це OPTIONS запит, відповідаємо успіхом
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {

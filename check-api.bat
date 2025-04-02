@@ -22,6 +22,11 @@ echo.
 echo Testing API connection...
 curl -I "%VITE_API_URL%/healthcheck.php"
 
+REM Check CORS headers
+echo.
+echo Testing CORS headers...
+curl -I -H "Origin: http://localhost:8080" "%VITE_API_URL%/healthcheck.php"
+
 REM Check Docker containers
 echo.
 echo Checking Docker containers:
@@ -46,5 +51,6 @@ echo 4. Check if port 8000 is being blocked by a firewall
 echo 5. Ensure VITE_API_URL is set correctly in the .env file
 echo 6. Try accessing %VITE_API_URL%/healthcheck.php in your browser
 echo 7. MySQL is now accessible on port 3307 instead of 3306
+echo 8. Check for CORS issues: Access-Control-Allow-Origin header should match your frontend origin
 
 pause

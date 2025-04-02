@@ -9,6 +9,10 @@ echo "API URL: ${VITE_API_URL:-http://localhost:8000/api}"
 # Check HTTP connection
 curl -I "${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php" 2>/dev/null | head -n 1
 
+# Check CORS headers
+echo -e "\nTesting CORS headers..."
+curl -I -H "Origin: http://localhost:8080" "${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php" 2>/dev/null | grep -i "Access-Control-Allow"
+
 # If curl doesn't work, try wget
 if [ $? -ne 0 ]; then
   echo "curl failed, trying wget..."
@@ -38,3 +42,4 @@ echo "3. Ensure VITE_API_URL is set correctly in the .env file"
 echo "4. Try accessing ${VITE_API_URL:-http://localhost:8000/api}/healthcheck.php in your browser"
 echo "5. If running alongside Denwer, make sure there are no port conflicts"
 echo "6. MySQL is now accessible on port 3307 instead of 3306"
+echo "7. Check for CORS issues: Access-Control-Allow-Origin header should match your frontend origin"
