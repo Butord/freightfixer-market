@@ -5,19 +5,13 @@ $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
 // Встановити заголовки CORS
 if (!empty($origin)) {
+    // Set the specific origin that was received in the request
     header("Access-Control-Allow-Origin: $origin");
     header('Access-Control-Allow-Credentials: true');
 } else {
-    // Fallback for local development if origin header is missing
-    $allowedOrigins = [
-        'http://localhost:8080',
-        'http://127.0.0.1:8080'
-    ];
-    
-    foreach ($allowedOrigins as $allowedOrigin) {
-        header("Access-Control-Allow-Origin: $allowedOrigin");
-        break; // Use the first one as fallback
-    }
+    // If no origin header was provided, we'll use a default for local development
+    // Note: for production, you'd want to be more restrictive
+    header("Access-Control-Allow-Origin: http://localhost:8080");
     header('Access-Control-Allow-Credentials: true');
 }
 

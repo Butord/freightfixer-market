@@ -1,48 +1,37 @@
-
 <?php
 // Включити детальне журналювання помилок для налагодження
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 error_log("Auth request received: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
 
-// Отримати значення дозволеного origin з середовища або запиту
+// Отримати значення дозволеного origin з запиту
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
 // Встановити заголовки CORS і типу вмісту
 header('Content-Type: application/json');
 
-// Only set the specific origin header if an origin was detected
+// Set the specific origin that was received in the request
 if (!empty($origin)) {
     header("Access-Control-Allow-Origin: $origin");
-    header('Access-Control-Allow-Credentials: true');
 } else {
-    // Fallback for local development if origin header is missing
-    $allowedOrigins = [
-        'http://localhost:8080',
-        'http://127.0.0.1:8080'
-    ];
-    
-    foreach ($allowedOrigins as $allowedOrigin) {
-        error_log("Checking allowed origin: $allowedOrigin");
-        header("Access-Control-Allow-Origin: $allowedOrigin");
-        break; // Use the first one as fallback
-    }
-    header('Access-Control-Allow-Credentials: true');
+    // If no origin header was provided, we'll use a default for local development
+    header("Access-Control-Allow-Origin: http://localhost:8080");
 }
 
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
+// Immediately respond to preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 require_once 'db_config.php';
 // Завантажити конфіг з admin_secret_code
 $config = require_once 'config.php';
 error_log("Config loaded, secret code available: " . (isset($config['admin_secret_code']) ? "yes" : "no"));
-
-// Обробка попереднього запиту OPTIONS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit(0);
-}
 
 // Отримати дію з URL
 $action = isset($_GET['action']) ? $_GET['action'] : '';
