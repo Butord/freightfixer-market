@@ -1,3 +1,4 @@
+
 <?php
 // Включити детальне журналювання помилок для налагодження
 ini_set('display_errors', 1);
@@ -18,6 +19,7 @@ if (!empty($origin)) {
     header("Access-Control-Allow-Origin: http://localhost:8080");
 }
 
+// Always set credentials header
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');

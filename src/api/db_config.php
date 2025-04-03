@@ -1,4 +1,3 @@
-
 <?php
 // Отримати значення дозволеного origin з запиту
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
@@ -7,14 +6,13 @@ $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 if (!empty($origin)) {
     // Set the specific origin that was received in the request
     header("Access-Control-Allow-Origin: $origin");
-    header('Access-Control-Allow-Credentials: true');
 } else {
     // If no origin header was provided, we'll use a default for local development
-    // Note: for production, you'd want to be more restrictive
     header("Access-Control-Allow-Origin: http://localhost:8080");
-    header('Access-Control-Allow-Credentials: true');
 }
 
+// Always set credentials header
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
