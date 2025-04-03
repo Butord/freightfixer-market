@@ -107,7 +107,7 @@ class ApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
-        credentials: 'include' // Включити куки з запитом
+        credentials: 'include' // Include cookies with request
       });
       
       console.log('Register response status:', response.status);

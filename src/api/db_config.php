@@ -86,7 +86,7 @@ try {
         return $pdo;
         
     } catch (\PDOException $e) {
-        // Повідомляти про помилки PDO тільки якщо запитується
+        // Повідомляти про помилки PDO тільки якщо ��апитується
         error_log("PDO Connection error: " . $e->getMessage());
         // Нам все ще потрібно повернути з'єднання mysqli, якщо PDO не вдається
         return $conn;
