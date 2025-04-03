@@ -101,6 +101,9 @@ class ApiService {
     console.log('API URL:', url);
     
     try {
+      // Add more debugging information
+      console.log('Sending with credentials mode: include');
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -111,6 +114,12 @@ class ApiService {
       });
       
       console.log('Register response status:', response.status);
+      console.log('Register response headers:', {
+        'content-type': response.headers.get('content-type'),
+        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials')
+      });
+      
       return handleApiResponse(response);
     } catch (error) {
       console.error('Network error during registration:', error);
