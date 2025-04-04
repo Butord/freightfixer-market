@@ -1,4 +1,4 @@
 
 <?php
-// Цей файл перенаправляє запити на новий модульний обробник аутентифікації
+// Redirect to auth index file
 require_once __DIR__ . '/auth/index.php';
