@@ -1,8 +1,21 @@
 
 // Базова конфігурація та утиліти для API
 
-// Базовий URL API з видаленим трейлінговим слешем для уникнення подвійних слешів
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+// Отримати базовий URL API з змінних середовища
+// На шаред хостингу фронтенд і бекенд часто знаходяться на одному домені
+const getApiBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  
+  // Якщо починається з '/', це відносний шлях на тому ж домені
+  if (apiUrl.startsWith('/')) {
+    return apiUrl.replace(/\/$/, '');
+  }
+  
+  // Інакше використовуємо як повний URL
+  return apiUrl.replace(/\/$/, '');
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Для відображення URL в консолі - допомагає при налагодженні
 console.log('API Base URL:', API_BASE_URL);

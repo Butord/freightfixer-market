@@ -1,16 +1,19 @@
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /arm3/
+  # Налаштувати базовий URL відповідно до вашого хостингу
+  # Якщо сайт знаходиться в кореневій директорії, змініть на:
+  # RewriteBase /
+  RewriteBase /
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /arm3/index.html [L]
+  RewriteRule . /index.html [L]
 </IfModule>
 
-# Додаємо CORS заголовки для вирішення проблеми з включеними обліковими даними
+# CORS заголовки для API запитів
 <IfModule mod_headers.c>
-  # Встановлюємо динамічний origin
+  # Динамічний origin для безпечної роботи з CORS
   SetEnvIf Origin "^(.*)$" ORIGIN=$1
   Header always set Access-Control-Allow-Origin "%{ORIGIN}e" env=ORIGIN
   Header always set Access-Control-Allow-Credentials "true"

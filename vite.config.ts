@@ -6,7 +6,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/", // Змінено базовий шлях з "/arm3/" на "/"
+  // Базовий шлях '/' для кореневої директорії хостингу
+  // Якщо сайт буде в підкаталозі, вкажіть відповідний шлях, наприклад '/mysite/'
+  base: "/",
   server: {
     host: "::",
     port: 8080,
@@ -25,7 +27,6 @@ export default defineConfig(({ mode }) => ({
           ],
           'vendor-state': ['zustand', '@tanstack/react-query'],
           'vendor-utils': ['date-fns', 'tailwind-merge', 'class-variance-authority'],
-          // Можна додати інші групи, якщо необхідно
         },
       },
     },

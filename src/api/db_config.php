@@ -1,52 +1,52 @@
 
 <?php
-// Отримати значення дозволеного origin з запиту
-$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-
-// Встановити заголовки CORS
-if (!empty($origin)) {
-    // Set the specific origin that was received in the request
-    header("Access-Control-Allow-Origin: $origin");
-} else {
-    // If no origin header was provided, we'll use a default for local development
-    header("Access-Control-Allow-Origin: http://localhost:8080");
-}
-
-// Always set credentials header
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-
-// Якщо це OPTIONS запит, відповідаємо успіхом
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// Включити обробку CORS
+require_once __DIR__ . '/auth/cors.php';
 
 // Включити журналювання помилок
 ini_set('display_errors', 0);  // Вимкнено для продакшн
 ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
-// Спробувати отримати конфігурацію бази даних з змінних середовища
-$host = getenv('DB_HOST') ?: 'database';  // Змінено з 'localhost' на 'database'
+// Функція для визначення шляху до конфігураційного файлу
+function getConfigFilePath() {
+    // Перевірка наявності локального файлу конфігурації
+    $localConfigFile = __DIR__ . '/../../secrets/db_config.php';
+    if (file_exists($localConfigFile)) {
+        return $localConfigFile;
+    }
+    
+    // Перевірка наявності файлу конфігурації за межами public_html
+    // Типовий сценарій для шаред хостингу
+    $parentDir = dirname(dirname(dirname(__FILE__)));
+    $outsideConfigFile = $parentDir . '/db_config.php';
+    if (file_exists($outsideConfigFile)) {
+        return $outsideConfigFile;
+    }
+    
+    // Повернути NULL, якщо файл конфігурації не знайдено
+    return null;
+}
+
+// Спробувати отримати конфігурацію бази даних
+$host = getenv('DB_HOST') ?: 'localhost';  // На шаред хостингу зазвичай localhost
 $db = getenv('DB_NAME') ?: 'your_database';
-$user = getenv('DB_USER') ?: 'root';  // Змінено за замовчуванням на 'root'
-$pass = getenv('DB_PASS') ?: 'rootpassword';  // Для відповідності docker-compose
+$user = getenv('DB_USER') ?: '';
+$pass = getenv('DB_PASS') ?: '';
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
 
-// Файл з даними для підключення до бази даних (більш безпечний, ніж змінні середовища в деяких конфігураціях)
-$dbConfigFile = __DIR__ . '/../../secrets/db_config.php';
-if (file_exists($dbConfigFile)) {
-    $dbConfig = require $dbConfigFile;
+// Завантаження конфігурації з файлу, якщо він існує
+$configFile = getConfigFilePath();
+if ($configFile !== null) {
+    $dbConfig = require $configFile;
     if (is_array($dbConfig)) {
         if (isset($dbConfig['host'])) $host = $dbConfig['host'];
         if (isset($dbConfig['db'])) $db = $dbConfig['db'];
         if (isset($dbConfig['user'])) $user = $dbConfig['user'];
         if (isset($dbConfig['pass'])) $pass = $dbConfig['pass'];
     }
-    error_log("Loaded database configuration from file");
+    error_log("Loaded database configuration from file: $configFile");
 }
 
 // Переконатися, що директорія для завантаження існує
