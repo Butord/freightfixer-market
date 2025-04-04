@@ -1,3 +1,4 @@
+
 <?php
 // Отримати значення дозволеного origin з запиту
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
@@ -28,10 +29,10 @@ ini_set('log_errors', 1);
 error_log("DB Connection attempt started");
 
 // Спробувати отримати конфігурацію бази даних з змінних середовища
-$host = getenv('DB_HOST') ?: 'localhost';
+$host = getenv('DB_HOST') ?: 'database';  // Змінено з 'localhost' на 'database'
 $db = getenv('DB_NAME') ?: 'your_database';
-$user = getenv('DB_USER') ?: 'your_username';
-$pass = getenv('DB_PASS') ?: 'your_password';
+$user = getenv('DB_USER') ?: 'root';  // Змінено за замовчуванням на 'root'
+$pass = getenv('DB_PASS') ?: 'rootpassword';  // Для відповідності docker-compose
 $charset = 'utf8mb4';
 $uploadDir = __DIR__ . '/uploads/';
 
@@ -86,7 +87,7 @@ try {
         return $pdo;
         
     } catch (\PDOException $e) {
-        // Повідомляти про помилки PDO тільки якщо ��апитується
+        // Повідомляти про помилки PDO тільки якщо запитується
         error_log("PDO Connection error: " . $e->getMessage());
         // Нам все ще потрібно повернути з'єднання mysqli, якщо PDO не вдається
         return $conn;
