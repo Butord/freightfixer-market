@@ -12,6 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const FEATURED_CATEGORIES = [
   { id: 1, name: "Двигун", image: "/placeholder.svg" },
@@ -88,6 +97,9 @@ const NEW_PRODUCTS = [
 
 const Home = () => {
   const addToCart = useCartStore((state) => state.addItem);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [priceRange, setPriceRange] = useState<string>("");
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault(); // Зупиняємо стандартну дію посилання
@@ -103,11 +115,16 @@ const Home = () => {
     toast.success(`${product.name} додано в кошик`);
   };
 
+  const handleSearch = () => {
+    // TODO: Implement search functionality
+    toast.info(`Пошук: ${searchQuery}, Категорія: ${selectedCategory || 'Всі'}, Ціна: ${priceRange || 'Будь-яка'}`);
+  };
+
   return (
     <div className="space-y-12 animate-fade-in">
       {/* Hero Section */}
-      <section className="relative h-[500px] rounded-xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30">
+      <section className="relative h-[600px] rounded-xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40">
           <img
             src="/placeholder.svg"
             alt="Hero"
@@ -115,16 +132,72 @@ const Home = () => {
           />
         </div>
         <div className="relative h-full flex items-center justify-center text-center px-4">
-          <div className="max-w-2xl">
+          <div className="max-w-4xl w-full">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Якісні запчастини для вашої вантажівки
             </h1>
             <p className="text-lg text-white/90 mb-8">
               Великий вибір оригінальних запчастин за найкращими цінами
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary-hover">
-              Перейти до каталогу
-            </Button>
+            
+            {/* Filter Section */}
+            <div className="bg-card/95 backdrop-blur-sm rounded-lg p-6 shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Search Input */}
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Пошук запчастин..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                  </div>
+                </div>
+
+                {/* Category Select */}
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Категорія" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Всі категорії</SelectItem>
+                    <SelectItem value="engine">Двигун</SelectItem>
+                    <SelectItem value="transmission">Трансмісія</SelectItem>
+                    <SelectItem value="brakes">Гальмівна система</SelectItem>
+                    <SelectItem value="suspension">Підвіска</SelectItem>
+                    <SelectItem value="lighting">Освітлення</SelectItem>
+                    <SelectItem value="electronics">Електроніка</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Price Range Select */}
+                <Select value={priceRange} onValueChange={setPriceRange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Ціна" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Всі ціни</SelectItem>
+                    <SelectItem value="0-1000">До 1000 грн</SelectItem>
+                    <SelectItem value="1000-5000">1000 - 5000 грн</SelectItem>
+                    <SelectItem value="5000-10000">5000 - 10000 грн</SelectItem>
+                    <SelectItem value="10000+">Від 10000 грн</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Search Button */}
+              <Button 
+                size="lg" 
+                className="w-full mt-4"
+                onClick={handleSearch}
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Знайти запчастини
+              </Button>
+            </div>
           </div>
         </div>
       </section>
